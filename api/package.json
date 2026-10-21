@@ -1,0 +1,10 @@
+{
+  "name": "intern-dta-api",
+  "version": "2.0.0",
+  "description": "Azure Cosmos DB sync endpoints for the Intern Daily Time Attendance app",
+  "main": "sync/index.js",
+  "engines": { "node": ">=20" },
+  "dependencies": {
+    "@azure/cosmos": "^4.2.0"
+  }
+}
