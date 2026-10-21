@@ -1,0 +1,2539 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Intern Daily Time Attendance</title>
+<style>
+  :root{
+    --navy:#1b6ea4;
+    --navy-d:#155b88;
+    --sky:#3aa5d1;
+    --sky-d:#2b8cb5;
+    --ice:#cdf1fb;
+    --teal:#0e6b7f;
+    --bg:#f4f7f9;
+    --card:#ffffff;
+    --line:#dde5ea;
+    --ink:#20303a;
+    --muted:#6b7f8b;
+    --ok:#1f9d6a;
+    --warn:#e0a80d;
+    --danger:#e8797f;
+    --danger-d:#cf5b62;
+    --r:10px;
+    --rowlab:#eaeef1;
+    --stripe:#f7fafb;
+    --stripe2:#e6edf1;
+    --tabbg:#e7eef2;
+    --notebg:#fff8e6;
+    --notebd:#f0dfae;
+    --noteink:#7a6520;
+    --shadow:0 2px 10px rgba(27,60,80,.10);
+    box-sizing:border-box;
+    padding-top:env(safe-area-inset-top,0px);
+    padding-bottom:env(safe-area-inset-bottom,0px);
+  }
+  :root[data-theme="dark"]{
+    --navy:#12334f;--navy-d:#0e2a42;--sky:#3aa5d1;--sky-d:#5cb9de;
+    --ice:#14323c;--teal:#8fd8e8;
+    --bg:#0e1620;--card:#16212c;--line:#28394a;--ink:#e6edf3;--muted:#9db2c6;
+    --rowlab:#1e2c3a;--stripe:#1a2634;--stripe2:#223142;--tabbg:#1b2836;
+    --notebg:#2a2415;--notebd:#4a3f1d;--noteink:#e3d09a;
+    --shadow:0 2px 12px rgba(0,0,0,.35);
+  }
+  *,*::before,*::after{box-sizing:border-box}
+  html{scroll-padding-top:env(safe-area-inset-top,0px);height:100%}
+  body{
+    margin:0;min-height:100%;
+    font-family:"Segoe UI",system-ui,-apple-system,Roboto,"Helvetica Neue",Arial,sans-serif;
+    background:var(--bg);color:var(--ink);font-size:16px;line-height:1.45;
+    -webkit-text-size-adjust:100%;
+  }
+  h1,h2,h3{margin:0;font-weight:600;letter-spacing:-.01em}
+  button{font:inherit;color:inherit}
+  input,select{font:inherit}
+  :focus-visible{outline:3px solid var(--sky);outline-offset:2px}
+
+  /* ---------- app bar ---------- */
+  .appbar{
+    position:sticky;top:0;z-index:40;background:var(--navy);color:#fff;
+    padding:calc(9px + env(safe-area-inset-top,0px)) clamp(14px,5vw,44px) 9px;
+    display:flex;align-items:center;gap:10px;
+  }
+  .mark{width:38px;height:32px;flex:0 0 auto;background:#fff;border-radius:4px;display:grid;place-items:center}
+  .mark svg{width:27px;height:24px}
+  .brand{min-width:0}
+  .brand small{display:block;font-size:10.5px;letter-spacing:.05em;opacity:.9;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .brand strong{display:block;font-size:clamp(12px,3.4vw,18px);font-weight:600;line-height:1.2;letter-spacing:-.012em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .appbar .spacer{flex:1}
+  .iconbtn{background:transparent;border:0;padding:8px;border-radius:8px;cursor:pointer;color:#fff;display:grid;place-items:center}
+  .iconbtn:hover{background:rgba(255,255,255,.14)}
+  .iconbtn svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+  .themebtn{flex:0 0 auto;background:transparent;border:0;padding:7px;border-radius:8px;color:#fff;cursor:pointer;display:grid;place-items:center}
+  .themebtn:hover{background:rgba(255,255,255,.16)}
+  .themebtn svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+  .signout{display:flex;align-items:center;gap:7px;flex:0 0 auto;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.4);border-radius:8px;padding:7px 10px;color:#fff;font-size:13.5px;font-weight:600;cursor:pointer}
+  .signout:hover{background:rgba(255,255,255,.28)}
+  .signout svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+  .signout .lb{display:none}
+  @media(min-width:560px){.signout .lb{display:inline}}
+
+  /* header progress meter */
+  .hmeter{flex:0 0 auto;border:0;background:transparent;padding:0;color:#fff;cursor:pointer;display:flex;align-items:center;gap:10px}
+  .ring{width:38px;height:38px;border-radius:50%;position:relative;display:grid;place-items:center;
+    background:conic-gradient(from -90deg,#9adcf6 calc(var(--pct,0)*1%),rgba(255,255,255,.22) 0)}
+  .ring::after{content:"";position:absolute;inset:4px;border-radius:50%;background:var(--navy)}
+  .ring b{position:relative;z-index:1;font-size:11px;font-weight:700;font-variant-numeric:tabular-nums}
+  .hline{display:none;min-width:200px;text-align:left}
+  .hline .t{font-size:11.5px;opacity:.92;white-space:nowrap}
+  .hline .b{height:8px;border-radius:99px;background:rgba(255,255,255,.24);overflow:hidden;margin-top:5px}
+  .hline .b i{display:block;height:100%;width:0;border-radius:99px;background:#9adcf6;transition:width .5s ease}
+  @media(min-width:780px){.hline{display:block}.hmeter .ring{display:none}}
+
+  .bigring{width:150px;height:150px;border-radius:50%;margin:0 auto 14px;position:relative;display:grid;place-items:center;
+    background:conic-gradient(from -90deg,var(--sky) calc(var(--pct,0)*1%),#e6edf1 0)}
+  .bigring.done{background:conic-gradient(from -90deg,var(--ok) calc(var(--pct,0)*1%),#e6edf1 0)}
+  .bigring::after{content:"";position:absolute;inset:13px;border-radius:50%;background:var(--card)}
+  .bigring b{position:relative;z-index:1;font-size:34px;font-weight:700;font-variant-numeric:tabular-nums}
+  .loc{font-size:12.5px;opacity:.92;margin-top:8px;word-break:break-word}
+  .loc a{color:inherit}
+
+  /* ---------- layout ---------- */
+  .wrap{max-width:900px;margin:0 auto;padding:16px clamp(20px,8.4vw,46px) 40px}
+  #view-login.on,#view-verify.on{display:flex;align-items:center;justify-content:center;
+    min-height:calc(100vh - 150px);min-height:calc(100dvh - 150px)}
+  #view-intern.on{display:flex;flex-direction:column;min-height:calc(100vh + 30px);min-height:calc(100dvh + 30px);padding-bottom:0}
+  body.on-intern .wrap{padding-bottom:0}
+  .view{display:none}
+  .view.on{display:block}
+  .pagetitle{display:flex;align-items:center;justify-content:center;gap:9px;margin:2px 0 13px;font-size:21px}
+  .pagetitle svg{width:25px;height:25px;stroke:var(--ink);fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow)}
+  .pad{padding:16px}
+  .row{display:flex;gap:10px;flex-wrap:wrap}
+  .grow{flex:1 1 180px;min-width:0}
+  .muted{color:var(--muted)}
+  .small{font-size:13px}
+  .center{text-align:center}
+  .mt{margin-top:14px}
+  .hide{display:none!important}
+
+  /* ---------- identity card ---------- */
+  .idcard{background:var(--ice);border-radius:9px;padding:12px 14px;text-align:center;color:var(--teal)}
+  .idcard .nm{font-size:22px;font-weight:700;letter-spacing:.01em;word-break:break-word;line-height:1.25}
+  .idcard .rl{font-size:15px;opacity:.9}
+  .idcard .dt{display:flex;align-items:center;justify-content:center;gap:7px;font-size:17.5px;font-weight:600;margin-top:6px}
+  .idcard .dt svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.8}
+
+  /* ---------- time rows ---------- */
+  .logrows{margin-top:14px;display:grid;gap:8px;padding:0 6px}
+  .lrow{display:grid;grid-template-columns:104px 1fr;border:1px solid var(--line);border-radius:7px;overflow:hidden;background:var(--card)}
+  .lrow .lab{background:var(--rowlab);padding:9px 11px;font-size:14.5px;border-right:1px solid var(--line);white-space:nowrap}
+  .lrow .val{padding:9px 12px;font-variant-numeric:tabular-nums;font-size:14.5px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .lrow .val:empty::after{content:"";}
+  @media(max-width:340px){.lrow{grid-template-columns:96px 1fr}.lrow .lab,.lrow .val{font-size:13.5px;padding:8px 9px}}
+
+  /* ---------- progress ---------- */
+  .prog{margin-top:16px;padding:14px 16px}
+  .prog .top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+  .prog .big{font-size:26px;font-weight:700;font-variant-numeric:tabular-nums}
+  .bar{height:12px;border-radius:99px;background:var(--stripe2);overflow:hidden;margin-top:10px}
+  .bar > i{display:block;height:100%;background:linear-gradient(90deg,var(--sky),var(--navy));border-radius:99px;transition:width .5s ease}
+  .bar.done > i{background:linear-gradient(90deg,#35c08a,var(--ok))}
+  .stats{display:flex;gap:18px;flex-wrap:wrap;margin-top:10px;font-size:14px;color:var(--muted)}
+  .stats b{color:var(--ink);font-variant-numeric:tabular-nums}
+
+  /* ---------- hold buttons ---------- */
+  .dockgap{flex:1 0 86px}
+  .dockbar{position:relative;margin:0 calc(-1 * clamp(20px,8.4vw,46px));background:var(--card);
+    padding:0 10px calc(52px + env(safe-area-inset-bottom,0px))}
+  .dockbar .wave{position:absolute;left:0;top:-79px;width:100%;height:88px;display:block;fill:var(--card)}
+  .dock{display:flex;align-items:flex-start;justify-content:space-between;max-width:440px;margin:0 auto}
+  .dockbar .pills{max-width:440px;margin:25px auto 0;padding:0 14px}
+  .hold{position:relative;border:0;cursor:pointer;overflow:hidden;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+  .hold::before{content:"";position:absolute;inset:0;pointer-events:none;
+    background:conic-gradient(from -90deg, rgba(255,255,255,.5) calc(var(--p,0) * 360deg), transparent 0);}
+  .hold:disabled{cursor:not-allowed;opacity:1}
+  .hold.main{flex:0 0 auto;width:146px;height:146px;aspect-ratio:1;margin-top:-57px;border-radius:50%;background:#33a7d6;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;box-shadow:0 8px 20px rgba(43,140,181,.32)}
+  .hold.main.out{background:#d5384a;box-shadow:0 8px 20px rgba(184,42,60,.32)}
+  .hold.main:disabled{background:#c3ced5;box-shadow:none;color:#fff}
+  .hold.main .ic{width:31px;height:31px;stroke:#fff;fill:#fff;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+  .hold.main .tx{font-size:18px;font-weight:600}
+  .hold.side{flex:0 0 auto;width:73px;height:73px;aspect-ratio:1;margin-top:50px;border-radius:50%;background:#d2d8db;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px}
+  .hold.side.armed{background:#00b8e2;color:#083b4c}
+  .hold.side .ic{width:27px;height:27px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+  .hold.side .tx{font-size:10.5px;font-weight:600;line-height:1.1;text-align:center;padding:0 3px}
+  .hold.side:disabled{opacity:1}
+  .hold .cd{position:absolute;left:0;right:0;bottom:8px;font-size:11px;font-weight:700;letter-spacing:.04em;opacity:0;transition:opacity .15s}
+  .hold.holding .cd{opacity:1}
+  .hold.main .cd{bottom:14px}
+  .pill .cd{left:auto;right:14px;bottom:auto;top:50%;transform:translateY(-50%)}
+  @media(max-width:340px){
+    .hold.main{width:132px;height:132px;margin-top:-52px}
+    .hold.side{width:66px;height:66px;margin-top:46px}
+    .hold.side .tx{font-size:10px}
+    .hold.side .ic{width:24px;height:24px}
+  }
+  .holdnote{text-align:center;font-size:12px;color:var(--muted);margin:7px 0 9px}
+
+  /* ---------- pill buttons ---------- */
+  .pills{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap}
+  .pill{flex:1 1 120px;display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 12px;border-radius:6px;border:0;color:#fff;font-size:14px;font-weight:600;cursor:pointer;position:relative;overflow:hidden}
+  .pill svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  .pill.grey{background:#657b85}
+  .pill.red{background:var(--danger)}
+  .pill.green{background:var(--ok)}
+  .pill.blue{background:var(--navy)}
+  .pill.hold::before{background:linear-gradient(90deg, rgba(255,255,255,.4) calc(var(--p,0) * 100%), transparent 0)}
+  .pill:disabled{opacity:.45;cursor:not-allowed}
+
+  .btn{padding:11px 16px;border-radius:8px;border:1px solid transparent;font-size:15px;font-weight:600;cursor:pointer;background:var(--navy);color:#fff}
+  .btn.sec{background:var(--card);color:var(--sky-d);border-color:var(--line)}
+  .btn.ghost{background:transparent;color:var(--muted);border-color:var(--line)}
+  .btn.dgr{background:var(--danger-d)}
+  .btn.sm{padding:7px 11px;font-size:13.5px;border-radius:7px}
+  .authbtns{display:flex;flex-direction:column;gap:10px;align-items:stretch}
+  .authbtns .btn{width:100%;text-align:center;padding:13px 16px;font-size:16px}
+  .dlrow{display:flex;gap:10px;width:100%}
+  .dlrow .btn{flex:1 1 0;text-align:center;justify-content:center}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+
+  /* ---------- forms ---------- */
+  label.f{display:block;margin-bottom:12px}
+  label.f > span{display:block;font-size:13.5px;color:var(--muted);margin-bottom:5px}
+  .in{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink)}
+  .in:focus{border-color:var(--sky)}
+  select.in{appearance:none;background-image:linear-gradient(45deg,transparent 50%,#5d7079 50%),linear-gradient(135deg,#5d7079 50%,transparent 50%);background-position:calc(100% - 18px) 50%,calc(100% - 12px) 50%;background-size:6px 6px,6px 6px;background-repeat:no-repeat;padding-right:36px}
+
+  /* ---------- tables ---------- */
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);background:var(--card)}
+  table{border-collapse:collapse;width:100%;min-width:520px;font-size:14px}
+  th{background:var(--card);color:var(--sky-d);font-weight:600;padding:12px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+  td{padding:11px 8px;border-bottom:1px solid var(--line);text-align:center;font-variant-numeric:tabular-nums;white-space:nowrap}
+  tbody tr:nth-child(odd){background:var(--stripe)}
+  tbody tr.we{color:#9aa9b2}
+  td.d{text-align:left;padding-left:14px;white-space:normal;min-width:64px}
+  tfoot td{font-weight:700;background:var(--stripe2);border-top:2px solid var(--line)}
+
+  .backbtn{width:44px;height:44px;border-radius:50%;background:var(--sky);border:0;color:#fff;display:grid;place-items:center;cursor:pointer;flex:0 0 auto}
+  .backbtn svg{width:24px;height:24px;stroke:#fff;fill:none;stroke-width:2.1;stroke-linecap:round;stroke-linejoin:round}
+  .barrow{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+
+  /* ---------- admin ---------- */
+  .tabs{display:flex;gap:6px;background:var(--tabbg);padding:5px;border-radius:10px;margin-bottom:16px}
+  .tabs button{flex:1;padding:10px 8px;border:0;border-radius:7px;background:transparent;font-size:14.5px;font-weight:600;color:var(--muted);cursor:pointer}
+  .tabs button.on{background:var(--card);color:var(--navy);box-shadow:var(--shadow)}
+  .ilist{display:grid;gap:12px}
+  .icard{padding:14px 16px}
+  .icard .hd{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+  .icard .nm{font-size:17px;font-weight:700}
+  .tag{font-size:12px;font-weight:700;padding:3px 9px;border-radius:99px;background:#eaf0f4;color:var(--muted);white-space:nowrap}
+  .tag.ok{background:#e2f6ed;color:var(--ok)}
+  .tag.go{background:#e7f2fa;color:var(--navy)}
+  .tag.off{background:#f2e9e9;color:#a1707a}
+  .icard .acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+  .kv{display:flex;gap:16px;flex-wrap:wrap;font-size:13.5px;color:var(--muted);margin-top:6px}
+  .kv b{color:var(--ink);font-variant-numeric:tabular-nums}
+
+  /* ---------- modal ---------- */
+  .scrim{position:fixed;inset:0;background:rgba(16,38,52,.55);display:none;align-items:center;justify-content:center;padding:16px;z-index:60;overflow:auto}
+  .scrim.on{display:flex}
+  .modal{background:var(--card);border-radius:14px;width:100%;max-width:520px;box-shadow:0 18px 50px rgba(0,0,0,.3);margin:auto;overflow:hidden}
+  .modal.wide{max-width:900px}
+  .mhead{padding:16px 18px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:10px}
+  .mhead h3{font-size:18px}
+  .mbody{padding:18px;max-height:min(70vh,620px);overflow:auto}
+  .mfoot{padding:14px 18px;border-top:1px solid var(--line);display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;background:var(--stripe)}
+  .x{background:transparent;border:0;font-size:24px;line-height:1;cursor:pointer;color:var(--muted);padding:2px 6px;border-radius:6px}
+
+  .congrats{text-align:center;padding:26px 22px 8px}
+  .congrats .seal{width:96px;height:96px;margin:0 auto 14px;border-radius:50%;background:linear-gradient(140deg,#35c08a,#1f9d6a);display:grid;place-items:center;box-shadow:0 10px 26px rgba(31,157,106,.35)}
+  .congrats .seal svg{width:52px;height:52px;stroke:#fff;fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+  .congrats h2{font-size:23px;color:var(--ok)}
+  .congrats p{margin:10px 0 0;color:var(--muted)}
+  .congrats .hrs{font-size:34px;font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums;margin-top:12px}
+
+  #certCanvas{width:100%;height:auto;border:1px solid var(--line);border-radius:8px;display:block;background:#fff}
+
+  .toast{position:fixed;left:50%;transform:translateX(-50%) translateY(20px);bottom:calc(22px + env(safe-area-inset-bottom,0px));background:#20303a;color:#fff;padding:12px 18px;border-radius:99px;font-size:14.5px;box-shadow:0 8px 24px rgba(0,0,0,.3);opacity:0;pointer-events:none;transition:.25s;z-index:80;max-width:90vw;text-align:center}
+  .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  .swal{position:relative;background:#fff;color:#545454;width:min(32em,calc(100vw - 32px));border-radius:5px;padding:1.6em 1em 1.4em;text-align:center;font-family:inherit;overflow:hidden;box-shadow:0 10px 40px rgba(0,0,0,.25);animation:swalIn .3s}
+  @keyframes swalIn{0%{transform:scale(.7)}45%{transform:scale(1.05)}80%{transform:scale(.95)}100%{transform:scale(1)}}
+  .swal-ic{width:5em;height:5em;margin:.6em auto 1.4em;border:.25em solid;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:24px;line-height:1}
+  .swal-ic.q{border-color:#c9dae1;color:#87adbd;font-size:24px}
+  .swal-ic.q::before{content:"?";font-size:3.6em;font-weight:500}
+  .swal-ic.ok{border-color:rgba(165,220,134,.3);color:#a5dc86}
+  .swal-ic.ok svg{width:3em;height:3em}
+  .swal-ic.err{border-color:#f27474;color:#f27474}
+  .swal-ic.err::before{content:"\00d7";font-size:3.8em;font-weight:300}
+  .swal-t{margin:0 0 .5em;font-size:1.875em;font-weight:600;color:#595959;line-height:1.25;word-wrap:break-word}
+  .swal-x{font-size:1.125em;line-height:1.5;margin:0 .6em;word-wrap:break-word}
+  .swal-x:empty{display:none}
+  .swal-x a{color:inherit}
+  .swal-a{display:flex;justify-content:center;gap:.6em;margin-top:1.25em}
+  .swal-a button{border:0;border-radius:.25em;font-size:1.0625em;padding:.625em 1.1em;color:#fff;cursor:pointer;font-family:inherit}
+  .swal-ok{background:#007bff;box-shadow:0 0 0 3px rgba(0,123,255,.35)}
+  .swal-no{background:#6c757d}
+  .swal-bar{position:absolute;left:0;bottom:0;height:.25em;background:rgba(0,0,0,.2);width:0}
+  .note{background:var(--notebg);border:1px solid var(--notebd);color:var(--noteink);border-radius:8px;padding:11px 13px;font-size:13.5px}
+  .foot{text-align:center;color:#9fb0b9;font-size:12px;margin-top:26px}
+
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+  @page{size:A4 landscape;margin:0}
+  @media print{
+    html,body{background:#fff;margin:0;padding:0}
+    .appbar,.scrim .mhead,.scrim .mfoot,.toast,#certCode{display:none!important}
+    .scrim{position:static;background:#fff;padding:0;display:block;overflow:visible}
+    .scrim:not(.on){display:none!important}
+    .modal{box-shadow:none;max-width:none;border-radius:0}
+    .mbody{max-height:none;overflow:visible;padding:0}
+    .view{display:none!important}
+    #certCanvas{width:297mm;height:210mm;border:0;border-radius:0}
+  }
+</style>
+</head>
+<body>
+
+<header class="appbar">
+  <div class="mark" aria-hidden="true">
+    <svg viewBox="0 0 32 28"><path d="M16 3 2 9l14 6 14-6-14-6Z" fill="#1b6ea4"/><path d="M7 12v7c0 2.8 4 4.8 9 4.8s9-2 9-4.8v-7" fill="none" stroke="#3aa5d1" stroke-width="2.2" stroke-linecap="round"/></svg>
+  </div>
+  <div class="brand">
+    <small>Student Internship Program</small>
+    <strong>Intern Daily Time Attendance</strong>
+  </div>
+  <div class="spacer"></div>
+  <button class="themebtn" id="btnTheme" title="Switch between light and dark">
+    <svg viewBox="0 0 24 24" id="icTheme"><path d="M20.5 14.5A8.5 8.5 0 1 1 9.5 3.5a7 7 0 0 0 11 11Z"/></svg>
+  </button>
+  <button class="hmeter hide" id="btnMeter" title="Internship progress">
+    <span class="hline"><span class="t" id="hText">0.00 of 0 hrs</span><span class="b"><i id="hFill"></i></span></span>
+    <span class="ring" id="hRing"><b id="hPct">0%</b></span>
+  </button>
+  <button class="signout hide" id="btnSignOut" title="Sign out">
+    <svg viewBox="0 0 24 24"><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3"/><path d="M10 17l5-5-5-5"/><path d="M15 12H3"/></svg>
+    <span class="lb">Sign out</span>
+  </button>
+</header>
+
+<main class="wrap">
+
+  <!-- ============ LOGIN ============ -->
+  <section class="view on" id="view-login">
+    <div class="card pad" style="width:100%;max-width:420px;margin:0 auto">
+      <h2 style="font-size:28px;margin:0 0 18px">Sign in</h2>
+      <label class="f"><span>User ID</span><input class="in" id="liUser" autocomplete="username" autocapitalize="none" spellcheck="false"></label>
+      <label class="f"><span>Password</span><input class="in" id="liPass" type="password" autocomplete="current-password" placeholder="Enter password"></label>
+      <div id="liErr" class="small hide" style="color:#c0392b;margin-bottom:10px"></div>
+      <div class="authbtns">
+        <button class="btn" id="btnLogin">Sign in</button>
+        <button class="btn sec" id="btnGoVerify">Verify a certificate</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ VERIFY ============ -->
+  <section class="view" id="view-verify">
+    <div class="card pad" style="width:100%;max-width:440px;margin:0 auto">
+      <h2 style="font-size:24px;margin:0 0 4px">Certificate Verifier</h2>
+      <p class="muted small" style="margin:0 0 16px">Enter the last 7 digit code on the certificate.</p>
+      <label class="f"><span>Certificate Code</span>
+        <input class="in" id="vfCode" placeholder="SSS-XXXXX-XX" maxlength="10" inputmode="latin"
+          autocapitalize="characters" autocomplete="off" spellcheck="false"
+          style="text-transform:uppercase;font-variant-numeric:tabular-nums;text-align:center;letter-spacing:.12em"></label>
+      <div id="vfResult" style="margin-bottom:14px"></div>
+      <div class="authbtns">
+        <button class="btn" id="btnVerify">Check</button>
+        <button class="btn sec" id="btnVerifyBack">Back to Sign In</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ INTERN ============ -->
+  <section class="view" id="view-intern">
+    <h1 class="pagetitle">
+      <svg viewBox="0 0 24 24"><rect x="2.5" y="5" width="19" height="14" rx="2"/><circle cx="8.5" cy="12" r="3.2"/><path d="M8.5 10.3V12l1.2.8"/><path d="M14 10h5M14 13.5h5"/></svg>
+      Daily Time Logs
+    </h1>
+
+    <div class="idcard">
+      <div class="nm" id="inName">—</div>
+      <div class="rl" id="inRole">—</div>
+      <div class="dt"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.6v.1"/></svg><span id="inDate">—</span></div>
+      <div class="loc" id="locLine"></div>
+    </div>
+
+    <div class="logrows" id="logRows"></div>
+
+    <div class="pills" id="certRow" style="display:none">
+      <button class="pill green" id="btnMyCert">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="9" r="5"/><path d="m8.5 13.5-1 7 4.5-2.4 4.5 2.4-1-7"/></svg> Certificate of completion
+      </button>
+    </div>
+
+    <div class="dockgap"></div>
+    <footer class="dockbar">
+      <svg class="wave" viewBox="0 0 400 80" preserveAspectRatio="none" aria-hidden="true"><path d="M0 80V72C72 72 88 2 200 2s128 70 200 70v8Z"/></svg>
+      <div class="dock">
+      <button class="hold side" id="btnBreak" data-hold>
+        <svg class="ic" viewBox="0 0 24 24"><path d="M4 10h13v4a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5v-4Z"/><path d="M17 11h1.8a2.2 2.2 0 0 1 0 4.4H17"/><path d="M8 3.5c0 1-1 1.5-1 2.5M12 3.5c0 1-1 1.5-1 2.5"/></svg>
+        <span class="tx" id="txBreak">Start Break</span>
+        <span class="cd"></span>
+      </button>
+      <button class="hold main" id="btnMain" data-hold>
+        <svg class="ic" viewBox="0 0 24 24" id="icMain"><path d="M8 5.5v13l11-6.5-11-6.5Z"/></svg>
+        <span class="tx" id="txMain">Time-in</span>
+        <span class="cd"></span>
+      </button>
+      <button class="hold side" id="btnOT" data-hold>
+        <svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12.5" r="7.5"/><path d="M12 8.5v4.2l2.6 1.6"/><path d="M9 2.8h6"/></svg>
+        <span class="tx" id="txOT">Start OT</span>
+        <span class="cd"></span>
+      </button>
+      </div>
+      <div class="pills">
+      <button class="pill grey" id="btnViewLogs">
+        <svg viewBox="0 0 24 24"><path d="M4 6h1M4 12h1M4 18h1M9 6h11M9 12h11M9 18h11"/></svg> View time record
+      </button>
+      <button class="pill red" id="btnUndo">
+        <svg viewBox="0 0 24 24"><path d="M5 7h14M10 4h4M6.5 7l.8 12a2 2 0 0 0 2 1.9h5.4a2 2 0 0 0 2-1.9l.8-12"/><path d="M10 11.5l4 4M14 11.5l-4 4"/></svg> Delete last entry
+      </button>
+      </div>
+    </footer>
+  </section>
+
+  <!-- ============ LOGS ============ -->
+  <section class="view" id="view-logs">
+    <div class="barrow">
+      <button class="backbtn" id="btnBackLogs" aria-label="Back"><svg viewBox="0 0 24 24"><path d="M10 6 4 12l6 6"/><path d="M4 12h10a6 6 0 0 1 6 6v1"/></svg></button>
+      <h1 class="pagetitle" style="margin:0;flex:1;justify-content:center">
+        <svg viewBox="0 0 24 24"><rect x="3" y="4.5" width="18" height="15" rx="2"/><path d="M3 9h18M8 4.5v-2M16 4.5v-2"/></svg>
+        Time record
+      </h1>
+      <div style="width:44px"></div>
+    </div>
+    <div class="center" style="margin-bottom:14px">
+      <select class="in" id="logMonth" style="max-width:240px;display:inline-block"></select>
+    </div>
+    <div class="tablewrap"><table id="logTable"></table></div>
+    <p class="foot" id="logFootNote"></p>
+  </section>
+
+  <!-- ============ ADMIN ============ -->
+  <section class="view" id="view-admin">
+    <h1 class="pagetitle">
+      <svg viewBox="0 0 24 24"><path d="M3 20v-1.5C3 16 5.7 14 9 14s6 2 6 4.5V20"/><circle cx="9" cy="8" r="3.5"/><path d="M17 14.5h4M17 17.5h4M17 20.5h4"/></svg>
+      Internship Monitor
+    </h1>
+    <div class="tabs">
+      <button class="on" data-tab="interns">Interns</button>
+      <button data-tab="records">Records</button>
+      <button data-tab="settings">Settings</button>
+    </div>
+
+    <div id="tab-interns">
+      <div class="row" style="margin-bottom:14px">
+        <input class="in grow" id="adSearch" placeholder="Search name or user ID">
+        <button class="btn sec" id="btnRefresh">Refresh</button>
+        <button class="btn" id="btnAddIntern">Add intern</button>
+      </div>
+      <div class="ilist" id="adList"></div>
+    </div>
+
+    <div id="tab-records" class="hide">
+      <div class="row" style="margin-bottom:14px">
+        <select class="in grow" id="adWho"></select>
+        <select class="in grow" id="adMonth"></select>
+      </div>
+      <div class="tablewrap"><table id="adTable"></table></div>
+      <p class="small muted mt">Tap any day to correct its times. Corrections are recomputed immediately.</p>
+    </div>
+
+    <div id="tab-settings" class="hide">
+      <div class="card pad">
+        <h3 style="margin-bottom:12px">Certificate details</h3>
+        <label class="f"><span>Office name</span><input class="in" id="stCo" placeholder="Social Security System"></label>
+        <label class="f"><span>Branch</span><input class="in" id="stBranch" placeholder="Lapu-Lapu Branch"></label>
+        <label class="f"><span>Signatory name</span><input class="in" id="stSig" placeholder="ENGR. ALIETA I. BASUBAS"></label>
+        <label class="f"><span>Signatory position</span><input class="in" id="stSigT" placeholder="Acting Head"></label>
+        <label class="f"><span>Default required hours for new interns</span><input class="in" id="stReq" type="number" min="1" step="1"></label>
+        <button class="btn" id="btnSaveSettings">Save settings</button>
+      </div>
+      <div class="card pad mt">
+        <h3 style="margin-bottom:12px">Admin password</h3>
+        <label class="f"><span>New password</span><input class="in" id="stPw" type="password" placeholder="Leave blank to keep"></label>
+        <button class="btn sec" id="btnSavePw">Change password</button>
+      </div>
+      <div class="card pad mt">
+        <h3 style="margin-bottom:6px">Certificate</h3>
+        <p class="small muted" style="margin-top:0">The layout, logo and wording are fixed. The fields above fill in the office, branch and signatory.</p>
+        <button class="btn sec" id="btnCertPreview">Preview certificate</button>
+      </div>
+      <div class="card pad mt">
+        <h3 style="margin-bottom:6px">Cloud sync</h3>
+        <p class="small muted" style="margin-top:0" id="stSync">—</p>
+        <div class="row"><button class="btn sec" id="btnSyncNow">Sync now</button></div>
+      </div>
+      <div class="card pad mt">
+        <h3 style="margin-bottom:6px">Backup</h3>
+        <p class="small muted" style="margin-top:0">A snapshot of everything, useful before a big change. With cloud sync on, records also live on the server.</p>
+        <div class="row">
+          <button class="btn sec" id="btnExport">Download backup</button>
+          <button class="btn sec" id="btnImport">Restore backup</button>
+          <input type="file" id="fileImport" accept="application/json" class="hide">
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- ============ MODALS ============ -->
+<div class="scrim" id="mIntern"><div class="modal">
+  <div class="mhead"><h3 id="miTitle">Add intern</h3><button class="x" data-close>&times;</button></div>
+  <div class="mbody">
+    <label class="f"><span>Full name</span><input class="in" id="miName"></label>
+    <label class="f"><span>Course, year and school</span><input class="in" id="miRole" placeholder="BSIT 4 · Cebu Institute of Technology"></label>
+    <div class="row">
+      <label class="f grow"><span>User ID</span><input class="in" id="miUser" autocapitalize="none" spellcheck="false"></label>
+      <label class="f grow"><span>Password</span><input class="in" id="miPass" placeholder="Leave blank to keep"></label>
+    </div>
+    <div class="row">
+      <label class="f grow"><span>Required hours</span><input class="in" id="miReq" type="number" min="1" step="1"></label>
+      <label class="f grow"><span>Hours adjustment</span><input class="in" id="miAdj" type="number" step="0.25" placeholder="e.g. 8 or -4"></label>
+    </div>
+    <p class="small muted" style="margin-top:-4px">Adjustment adds to or deducts from the total — use it for credited seminars or disallowed time.</p>
+    <label class="f"><span>Host company for this intern</span><input class="in" id="miCo" placeholder="Social Security System, Lapu-Lapu Branch"></label>
+    <label class="f"><span>Status</span><select class="in" id="miActive"><option value="1">Active</option><option value="0">Inactive</option></select></label>
+  </div>
+  <div class="mfoot">
+    <button class="btn ghost" id="miDelete" style="margin-right:auto">Remove intern</button>
+    <button class="btn sec" data-close>Cancel</button>
+    <button class="btn" id="miSave">Save intern</button>
+  </div>
+</div></div>
+
+<div class="scrim" id="mLog"><div class="modal">
+  <div class="mhead"><h3 id="mlTitle">Correct entry</h3><button class="x" data-close>&times;</button></div>
+  <div class="mbody">
+    <div class="row">
+      <label class="f grow"><span>Time in</span><input class="in" id="mlIn" type="time"></label>
+      <label class="f grow"><span>Time out</span><input class="in" id="mlOut" type="time"></label>
+    </div>
+    <div class="row">
+      <label class="f grow"><span>Break start</span><input class="in" id="mlBs" type="time"></label>
+      <label class="f grow"><span>Break end</span><input class="in" id="mlBe" type="time"></label>
+    </div>
+    <div class="row">
+      <label class="f grow"><span>OT in</span><input class="in" id="mlOtIn" type="time"></label>
+      <label class="f grow"><span>OT out</span><input class="in" id="mlOtOut" type="time"></label>
+    </div>
+    <div class="note">This day will count <b id="mlCalc">0.00</b> hours.</div>
+    <p class="small muted" id="mlIps" style="margin:10px 0 0"></p>
+  </div>
+  <div class="mfoot">
+    <button class="btn ghost" id="mlClear" style="margin-right:auto">Clear day</button>
+    <button class="btn sec" data-close>Cancel</button>
+    <button class="btn" id="mlSave">Save entry</button>
+  </div>
+</div></div>
+
+<div class="scrim" id="mDone"><div class="modal">
+  <div class="congrats">
+    <div class="seal"><svg viewBox="0 0 24 24"><path d="m4.5 12.5 5 5 10-11"/></svg></div>
+    <h2>Required hours completed</h2>
+    <p id="doneMsg">—</p>
+    <div class="hrs"><span id="doneHrs">0</span> hrs</div>
+    <p class="small muted" id="doneSub">—</p>
+  </div>
+  <div class="mfoot" style="justify-content:center;border-top:0">
+    <button class="btn sec" data-close>Close</button>
+    <button class="btn" id="btnGetCert">Download certificate</button>
+  </div>
+</div></div>
+
+<div class="scrim" id="mCert"><div class="modal wide">
+  <div class="mhead"><h3 id="certTitle">Certificate of completion</h3><button class="x" data-close>&times;</button></div>
+  <div class="mbody">
+    <canvas id="certCanvas" width="3508" height="2480"></canvas>
+    <p class="small muted center" id="certCode" style="margin:10px 0 0;font-variant-numeric:tabular-nums"></p>
+    <div class="row hide" id="certAdmin" style="margin-top:12px;align-items:flex-end">
+      <label class="f grow" style="margin:0"><span>Date issued</span><input class="in" id="certDate" type="date"></label>
+    </div>
+  </div>
+  <div class="mfoot" style="flex-direction:column;align-items:stretch">
+    <div class="dlrow">
+      <button class="btn sec" data-close>Close</button>
+      <button class="btn sec" id="btnQRGen">Generate QR code</button>
+      <button class="btn sec" id="btnPrintCert">Print</button>
+    </div>
+    <div class="dlrow">
+      <button class="btn sec" id="btnPngCert">Save as image</button>
+      <button class="btn" id="btnPdfCert">Save as PDF</button>
+    </div>
+  </div>
+</div></div>
+
+<div class="scrim" id="mConfirm"><div class="modal" style="max-width:420px">
+  <div class="mhead"><h3 id="cfTitle">Confirm</h3><button class="x" data-close>&times;</button></div>
+  <div class="mbody"><p id="cfBody" style="margin:0"></p></div>
+  <div class="mfoot"><button class="btn sec" data-close>Cancel</button><button class="btn dgr" id="cfOk">Confirm</button></div>
+</div></div>
+
+<div class="scrim" id="mPunch"><div class="swal">
+  <div class="swal-ic" id="puIcon"></div>
+  <h2 class="swal-t" id="puTitle"></h2>
+  <div class="swal-x" id="puBody"></div>
+  <div class="swal-a"><button class="swal-ok" id="puOk">OK</button><button class="swal-no" id="puCancel">Cancel</button></div>
+  <div class="swal-bar" id="puBar"></div>
+</div></div>
+
+<div class="scrim" id="mProg"><div class="modal" style="max-width:470px">
+  <div class="mhead"><h3>Internship progress</h3><button class="x" data-close>&times;</button></div>
+  <div class="mbody">
+    <div class="center">
+      <div class="bigring" id="pgRing"><b id="pgPct">0%</b></div>
+      <div style="font-size:24px;font-weight:700;font-variant-numeric:tabular-nums"><span id="pgDone">0.00</span>
+        <span class="muted" style="font-size:16px;font-weight:400">of <span id="pgReq">0</span> hrs</span></div>
+      <div class="tag go" id="pgTag" style="display:inline-block;margin-top:8px">In progress</div>
+    </div>
+    <div class="bar" id="pgBar" style="margin-top:16px"><i style="width:0%"></i></div>
+    <div class="stats" style="justify-content:space-between">
+      <span>Remaining <b id="pgLeft">0.00</b> hrs</span>
+      <span>Today <b id="pgToday">0.00</b> hrs</span>
+      <span>Days logged <b id="pgDays">0</b></span>
+    </div>
+    <div class="small muted mt" id="pgLoc"></div>
+    <div class="small muted" id="pgSync" style="margin-top:4px"></div>
+  </div>
+  <div class="mfoot">
+    <button class="btn sec" data-close>Close</button>
+    <button class="btn hide" id="pgCert">Certificate</button>
+  </div>
+</div></div>
+
+<div class="scrim" id="mLogins"><div class="modal">
+  <div class="mhead"><h3 id="lgTitle">Sign-in history</h3><button class="x" data-close>&times;</button></div>
+  <div class="mbody" id="lgBody"></div>
+  <div class="mfoot"><button class="btn sec" data-close>Close</button></div>
+</div></div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+"use strict";
+
+/* ============================================================
+   storage
+   ============================================================ */
+var KEY = "idta_v1", SES = "idta_session", THEME_KEY = "idta_theme";
+var LOGO_SSS = "data:image/png;base64,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";
+var db, me = null, logMonthSel = null, adMonthSel = null, adWhoSel = null, certFor = null, cfAction = null, editingLog = null, editingIntern = null;
+
+function seed(){
+  return {
+    settings:{
+      company:"Social Security System",
+      branch:"Lapu-Lapu Branch",
+      program:"on-the-job training",
+      msg1:"Congratulations on a job well done,",
+      msg2:"and best wishes in your future endeavors.",
+      signatory:"",
+      signatoryTitle:"Acting Head",
+      siteUrl:"",
+      defaultRequired:300
+    },
+    users:[
+      {id:"u_admin", userid:"admin", pass:"admin123", role:"admin", name:"Administrator", roleText:"Program coordinator", active:1},
+      {id:"u_demo", userid:"intern", pass:"intern123", role:"intern", name:"Juan A. Dela Cruz", roleText:"BSIT 4 · Student Intern", company:"", requiredHours:300, adjustHours:0, active:1}
+    ],
+    logs:{},
+    done:{},
+    logins:{}
+  };
+}
+function load(){
+  try{
+    var raw = localStorage.getItem(KEY);
+    if(!raw) return seed();
+    var d = JSON.parse(raw);
+    if(!d || !d.users) return seed();
+    d.logs = d.logs || {}; d.done = d.done || {}; d.logins = d.logins || {}; d.settings = d.settings || seed().settings;
+    return d;
+  }catch(e){ return seed(); }
+}
+function save(){
+  try{ localStorage.setItem(KEY, JSON.stringify(db)); }catch(e){ toast("Storage is full or blocked — export a backup."); }
+  if(typeof queueSync === "function") queueSync();
+}
+function uid(){ return "u_" + Math.random().toString(36).slice(2,9); }
+
+/* ============================================================
+   helpers
+   ============================================================ */
+var $ = function(s,r){ return (r||document).querySelector(s); };
+var $$ = function(s,r){ return Array.prototype.slice.call((r||document).querySelectorAll(s)); };
+var pad = function(n){ return String(n).padStart(2,"0"); };
+var MON = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+var DOW = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+var DOW2 = ["Su","Mo","Tu","We","Th","Fr","Sa"];
+
+function ymd(d){ return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate()); }
+function todayKey(){ return ymd(new Date()); }
+function nowHM(){ var d=new Date(); return pad(d.getHours())+":"+pad(d.getMinutes()); }
+function hm2min(t){ if(!t) return null; var p=String(t).split(":"); return (+p[0])*60 + (+p[1]); }
+function span(a,b){ var x = hm2min(b) - hm2min(a); if(x < 0) x += 1440; return x; }
+function fmtHrs(min){ return (min/60).toFixed(2); }
+function fmtNum(n){ return (Math.round(n*100)/100).toString(); }
+function longDate(key){
+  var p = key.split("-"), d = new Date(+p[0], +p[1]-1, +p[2]);
+  return d.getDate()+" "+MON[d.getMonth()]+" "+d.getFullYear()+", "+DOW[d.getDay()];
+}
+function fmtDT(iso){
+  var d = new Date(iso);
+  if(isNaN(d)) return "—";
+  return d.getDate() + " " + MON[d.getMonth()].slice(0,3) + " " + d.getFullYear() + ", " + pad(d.getHours()) + ":" + pad(d.getMinutes());
+}
+function coordText(e){
+  if(e && e.lat !== undefined) return e.lat.toFixed(5) + ", " + e.lng.toFixed(5) + (e.acc ? " (±" + e.acc + " m)" : "");
+  return e && e.err ? e.err : "Locating…";
+}
+function mapLink(e){
+  return '<a href="https://www.google.com/maps?q=' + e.lat + "," + e.lng + '" target="_blank" rel="noopener">' + e.lat.toFixed(5) + ", " + e.lng.toFixed(5) + "</a>";
+}
+function ordinal(n){ var s=["th","st","nd","rd"], v=n%100; return n+(s[(v-20)%10]||s[v]||s[0]); }
+
+function dayMinutes(l){
+  if(!l) return 0;
+  var m = 0;
+  if(l.in && l.out){
+    m = span(l.in, l.out);
+    if(l.bs && l.be) m -= span(l.bs, l.be);
+  }
+  if(l.otIn && l.otOut) m += span(l.otIn, l.otOut);
+  return m > 0 ? m : 0;
+}
+function userLogs(id){ db.logs[id] = db.logs[id] || {}; return db.logs[id]; }
+function totalMinutes(u){
+  var L = userLogs(u.id), m = 0;
+  for(var k in L) if(Object.prototype.hasOwnProperty.call(L,k)) m += dayMinutes(L[k]);
+  m += Math.round((+u.adjustHours || 0) * 60);
+  return m;
+}
+function requiredMinutes(u){ return Math.round((+u.requiredHours || db.settings.defaultRequired) * 60); }
+function daysLogged(u){
+  var L = userLogs(u.id), n = 0;
+  for(var k in L) if(dayMinutes(L[k]) > 0) n++;
+  return n;
+}
+function companyOf(u){ return (u.company && u.company.trim()) || db.settings.company; }
+function findUser(id){ for(var i=0;i<db.users.length;i++) if(db.users[i].id===id) return db.users[i]; return null; }
+
+var toastT;
+function toast(msg){
+  var t = $("#toast"); t.textContent = msg; t.classList.add("on");
+  clearTimeout(toastT); toastT = setTimeout(function(){ t.classList.remove("on"); }, 2600);
+}
+function openModal(sel){ $(sel).classList.add("on"); }
+function closeModal(sel){ $(sel).classList.remove("on"); }
+$$(".scrim").forEach(function(s){
+  s.addEventListener("click", function(e){
+    if(e.target === s || (e.target.hasAttribute && e.target.hasAttribute("data-close"))) s.classList.remove("on");
+  });
+});
+function confirmAction(title, body, okLabel, fn){
+  $("#cfTitle").textContent = title; $("#cfBody").textContent = body;
+  $("#cfOk").textContent = okLabel || "Confirm"; cfAction = fn; openModal("#mConfirm");
+}
+$("#cfOk").addEventListener("click", function(){ closeModal("#mConfirm"); if(cfAction) cfAction(); cfAction = null; });
+
+/* ============================================================
+   press-and-hold (5 seconds)
+   ============================================================ */
+var HOLD_MS = 1000;
+function wireHold(el, fn){
+  var raf = null, t0 = 0, active = false;
+  function paint(p){
+    el.style.setProperty("--p", p);
+    var cd = el.querySelector(".cd");
+    if(cd) cd.textContent = p >= 1 ? "" : Math.ceil((1 - p) * HOLD_MS / 1000) + "s";
+  }
+  function step(ts){
+    if(!active) return;
+    if(!t0) t0 = ts;
+    var p = Math.min(1, (ts - t0) / HOLD_MS);
+    paint(p);
+    if(p >= 1){ stop(); try{ if(navigator.vibrate) navigator.vibrate(60); }catch(e){} fn(); return; }
+    raf = requestAnimationFrame(step);
+  }
+  function start(e){
+    if(el.disabled || active) return;
+    if(e.button !== undefined && e.button !== 0) return;
+    active = true; t0 = 0; el.classList.add("holding");
+    try{ el.setPointerCapture(e.pointerId); }catch(err){}
+    raf = requestAnimationFrame(step);
+  }
+  function stop(){
+    active = false; if(raf) cancelAnimationFrame(raf); raf = null;
+    el.classList.remove("holding"); paint(0);
+  }
+  el.addEventListener("pointerdown", start);
+  el.addEventListener("pointerup", stop);
+  el.addEventListener("pointercancel", stop);
+  el.addEventListener("pointerleave", stop);
+  el.addEventListener("contextmenu", function(e){ e.preventDefault(); });
+  el.addEventListener("click", function(e){ e.preventDefault(); if(!el.disabled) toast("Press and hold for 1 second."); });
+  el.addEventListener("keydown", function(e){
+    if((e.key === "Enter" || e.key === " ") && !el.disabled && !active){ e.preventDefault(); active = true; t0 = 0; el.classList.add("holding"); raf = requestAnimationFrame(step); }
+  });
+  el.addEventListener("keyup", stop);
+  el.addEventListener("blur", stop);
+}
+
+/* ============================================================
+   sign-in location
+   ============================================================ */
+function recordLogin(u){
+  db.logins[u.id] = db.logins[u.id] || [];
+  var entry = {at: new Date().toISOString()};
+  db.logins[u.id].unshift(entry);
+  if(db.logins[u.id].length > 30) db.logins[u.id].length = 30;
+  save();
+  function done(){ save(); paintLocation(); if(me && me.role === "admin") renderAdmin(); }
+  fetchIp(function(ip){ if(ip){ entry.ip = ip; save(); } });
+  if(!navigator.geolocation){ entry.err = "Location not supported on this device"; done(); return; }
+  if(!window.isSecureContext && location.protocol !== "file:"){ entry.err = "Location needs an https address"; done(); return; }
+  fetchIp(function(ip){ if(ip){ entry.ip = ip; save(); paintLocation(); } });
+  navigator.geolocation.getCurrentPosition(function(pos){
+    entry.lat = +pos.coords.latitude.toFixed(6);
+    entry.lng = +pos.coords.longitude.toFixed(6);
+    entry.acc = Math.round(pos.coords.accuracy);
+    done();
+  }, function(err){
+    entry.err = err.code === 1 ? "Location permission denied" : (err.code === 2 ? "Location unavailable" : "Location timed out");
+    done();
+  }, {enableHighAccuracy:true, timeout:15000, maximumAge:60000});
+}
+function lastLogin(id){ var a = db.logins[id]; return a && a.length ? a[0] : null; }
+function paintLocation(){
+  if(!me) return;
+  var e = lastLogin(me.id), line = $("#locLine"), box = $("#pgLoc");
+  if(!e){ if(line) line.textContent = ""; if(box) box.textContent = ""; return; }
+  var where = e.lat !== undefined ? coordText(e) : (e.err || "Locating…");
+  if(line) line.innerHTML = "Signed in " + esc(fmtDT(e.at)) + " · " + (e.lat !== undefined ? mapLink(e) : esc(where));
+  if(box) box.innerHTML = "Sign-in location: " + (e.lat !== undefined ? mapLink(e) + (e.acc ? " (±" + e.acc + " m)" : "") : esc(where));
+}
+
+/* ============================================================
+   light and dark
+   ============================================================ */
+var ICON_MOON = '<path d="M20.5 14.5A8.5 8.5 0 1 1 9.5 3.5a7 7 0 0 0 11 11Z"/>';
+var ICON_SUN = '<circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M4.2 4.2l1.6 1.6M18.2 18.2l1.6 1.6M2.5 12h2.2M19.3 12h2.2M4.2 19.8l1.6-1.6M18.2 5.8l1.6-1.6"/>';
+function applyTheme(mode){
+  document.documentElement.setAttribute("data-theme", mode);
+  var ic = $("#icTheme");
+  if(ic) ic.innerHTML = mode === "dark" ? ICON_SUN : ICON_MOON;
+  var btn = $("#btnTheme");
+  if(btn) btn.title = mode === "dark" ? "Switch to light" : "Switch to dark";
+}
+function initTheme(){
+  var saved = null;
+  try{ saved = localStorage.getItem(THEME_KEY); }catch(e){}
+  if(saved !== "dark" && saved !== "light") saved = "light";
+  applyTheme(saved);
+}
+$("#btnTheme").addEventListener("click", function(){
+  var next = document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark";
+  applyTheme(next);
+  try{ localStorage.setItem(THEME_KEY, next); }catch(e){}
+});
+
+/* ============================================================
+   routing
+   ============================================================ */
+function show(view){
+  document.body.classList.toggle("on-intern", view === "intern");
+  $$(".view").forEach(function(v){ v.classList.remove("on"); });
+  $("#view-" + view).classList.add("on");
+  window.scrollTo(0,0);
+}
+function route(){
+  var sid = null;
+  try{ sid = localStorage.getItem(SES); }catch(e){}
+  me = sid ? findUser(sid) : null;
+  $("#btnSignOut").classList.toggle("hide", !me);
+  $("#btnMeter").classList.toggle("hide", !me || me.role !== "intern");
+  if(!me){ show("login"); return; }
+  if(me.role === "admin"){ renderAdmin(); show("admin"); }
+  else { renderIntern(); paintLocation(); show("intern"); checkDone(me, false); }
+}
+var IDLE_MS = 15 * 60 * 1000, idleTimer = null;
+function signOut(reason){
+  try{ localStorage.removeItem(SES); }catch(e){}
+  clearTimeout(idleTimer); idleTimer = null;
+  me = null;
+  $("#liUser").value = ""; $("#liPass").value = "";
+  route();
+  if(reason) toast(reason);
+}
+function armIdle(){
+  clearTimeout(idleTimer);
+  if(!me) return;
+  idleTimer = setTimeout(function(){
+    signOut("Signed out after 15 minutes without activity. The database rests until someone signs in.");
+  }, IDLE_MS);
+}
+["pointerdown", "keydown", "wheel"].forEach(function(ev){
+  document.addEventListener(ev, armIdle, {passive: true, capture: true});
+});
+document.addEventListener("visibilitychange", function(){ if(!document.hidden) armIdle(); });
+$("#btnSignOut").addEventListener("click", function(){ signOut(""); });
+
+/* ============================================================
+   login
+   ============================================================ */
+function doLogin(){
+  var btn = $("#btnLogin");
+  if(SYNC.url && !SYNCST.busy && navigator.onLine !== false){
+    // wake the database once, at sign-in, and check against fresh accounts
+    btn.disabled = true; btn.textContent = "Checking…";
+    syncNow({force: true, cb: function(){
+      btn.disabled = false; btn.textContent = "Sign in";
+      finishLogin();
+    }});
+    return;
+  }
+  finishLogin();
+}
+function finishLogin(){
+  var u = $("#liUser").value.trim().toLowerCase(), p = $("#liPass").value;
+  var hit = null;
+  for(var i=0;i<db.users.length;i++){
+    var x = db.users[i];
+    if(String(x.userid).toLowerCase() === u && x.pass === p){ hit = x; break; }
+  }
+  if(!hit){ $("#liErr").textContent = "That user ID and password don't match a record."; $("#liErr").classList.remove("hide"); return; }
+  if(hit.role === "intern" && !hit.active){ $("#liErr").textContent = "This account is inactive. Ask your coordinator to reactivate it."; $("#liErr").classList.remove("hide"); return; }
+  $("#liErr").classList.add("hide");
+  try{ localStorage.setItem(SES, hit.id); }catch(e){}
+  route();
+  armIdle();
+  recordLogin(hit);
+  syncNow();
+}
+$("#btnLogin").addEventListener("click", doLogin);
+$("#liPass").addEventListener("keydown", function(e){ if(e.key === "Enter") doLogin(); });
+$("#liUser").addEventListener("keydown", function(e){ if(e.key === "Enter") $("#liPass").focus(); });
+
+/* ============================================================
+   intern screen
+   ============================================================ */
+var FIELDS = [
+  {k:"in",    label:"Sign-In"},
+  {k:"bs",    label:"Break Start"},
+  {k:"be",    label:"Break End"},
+  {k:"out",   label:"Sign-Out"},
+  {k:"otIn",  label:"OT-In"},
+  {k:"otOut", label:"OT-Out"}
+];
+function stampText(key, hm){
+  if(!hm) return "";
+  var p = key.split("-");
+  return (+p[2]) + " " + MON[+p[1]-1].slice(0,3) + " " + p[0].slice(2) + " - " + hm;
+}
+
+function todayLog(u){
+  var L = userLogs(u.id), k = todayKey();
+  L[k] = L[k] || {};
+  return L[k];
+}
+
+function renderIntern(){
+  var u = me, l = todayLog(u);
+  $("#inName").textContent = u.name.toUpperCase();
+  $("#inRole").textContent = u.roleText || "Student Intern";
+  $("#inDate").textContent = longDate(todayKey());
+
+  var rows = FIELDS.map(function(f){
+    return '<div class="lrow"><div class="lab">' + f.label + '</div><div class="val">' + stampText(todayKey(), l[f.k]) + "</div></div>";
+  }).join("");
+  $("#logRows").innerHTML = rows;
+
+  var done = totalMinutes(u), req = requiredMinutes(u);
+  var pct = req > 0 ? Math.min(100, done / req * 100) : 0;
+  $("#pgDone").textContent = fmtHrs(done);
+  $("#pgReq").textContent = fmtNum(req/60);
+  $("#pgLeft").textContent = fmtHrs(Math.max(0, req - done));
+  $("#pgToday").textContent = fmtHrs(dayMinutes(l));
+  $("#pgDays").textContent = daysLogged(u);
+  $("#pgBar").classList.toggle("done", done >= req);
+  $("#pgBar").firstElementChild.style.width = pct + "%";
+  var tag = $("#pgTag");
+  tag.textContent = done >= req ? "Completed" : (pct >= 75 ? "Almost there" : "In progress");
+  tag.className = "tag " + (done >= req ? "ok" : "go");
+  $("#certRow").style.display = done >= req ? "flex" : "none";
+  $("#pgPct").textContent = pct.toFixed(0) + "%";
+  $("#pgRing").style.setProperty("--pct", pct);
+  $("#pgRing").classList.toggle("done", done >= req);
+  $("#pgCert").classList.toggle("hide", done < req);
+  $("#hPct").textContent = pct.toFixed(0) + "%";
+  $("#hRing").style.setProperty("--pct", pct);
+  $("#hFill").style.width = pct + "%";
+  $("#hText").textContent = fmtHrs(done) + " of " + fmtNum(req/60) + " hrs · " + pct.toFixed(0) + "%";
+
+  // main button state
+  var main = $("#btnMain"), txt = $("#txMain"), ic = $("#icMain");
+  main.disabled = false; main.classList.remove("out");
+  if(!l.in){
+    txt.textContent = "Time-in";
+    ic.innerHTML = '<path d="M8 5.5v13l11-6.5-11-6.5Z" fill="#fff" stroke="none"/>';
+  } else if(!l.out){
+    txt.textContent = "Time-out"; main.classList.add("out");
+    ic.innerHTML = '<rect x="7.4" y="7.4" width="9.2" height="9.2" rx="1.8" fill="#fff" stroke="none"/>';
+  } else {
+    txt.textContent = "Day closed"; main.disabled = true;
+    ic.innerHTML = '<path d="m5 12.5 4.5 4.5L19 7.5" fill="none" stroke="#fff"/>';
+  }
+
+  // break button
+  var bb = $("#btnBreak"), bt = $("#txBreak");
+  if(l.in && !l.bs && !l.out){ bb.disabled = false; bt.textContent = "Start Break"; bb.classList.add("armed"); }
+  else if(l.bs && !l.be){ bb.disabled = false; bt.textContent = "End Break"; bb.classList.add("armed"); }
+  else { bb.disabled = true; bt.textContent = l.be ? "Break Done" : "Start Break"; bb.classList.remove("armed"); }
+
+  // OT button
+  var ob = $("#btnOT"), ot = $("#txOT");
+  if(l.in && !l.otIn && (!l.bs || l.be)){ ob.disabled = false; ot.textContent = "Start OT"; ob.classList.add("armed"); }
+  else if(l.otIn && !l.otOut){ ob.disabled = false; ot.textContent = "End OT"; ob.classList.add("armed"); }
+  else { ob.disabled = true; ot.textContent = l.otOut ? "OT Done" : "Start OT"; ob.classList.remove("armed"); }
+
+  $("#btnUndo").disabled = !lastField(l);
+}
+
+function lastField(l){
+  var order = ["otOut","otIn","out","be","bs","in"];
+  for(var i=0;i<order.length;i++) if(l[order[i]]) return order[i];
+  return null;
+}
+
+function fetchIp(cb){
+  if(!apiBase()){ cb(null); return; }
+  var done = false, timer = setTimeout(function(){ if(!done){ done = true; cb(null); } }, 6000);
+  fetch(apiBase() + "/whoami", {cache:"no-store"})
+    .then(function(r){ return r.json(); })
+    .then(function(d){ if(!done){ done = true; clearTimeout(timer); cb((d && d.ip) || null); } })
+    .catch(function(){ if(!done){ done = true; clearTimeout(timer); cb(null); } });
+}
+/* ============================================================
+   punch location: every time record needs a device location
+   ============================================================ */
+function getPunchLocation(cb){
+  if(!navigator.geolocation){ cb(null, "Location is not supported on this device."); return; }
+  if(!window.isSecureContext && location.protocol !== "file:"){ cb(null, "Location needs an https address."); return; }
+  navigator.geolocation.getCurrentPosition(function(pos){
+    cb({lat:+pos.coords.latitude.toFixed(6), lng:+pos.coords.longitude.toFixed(6), acc:Math.round(pos.coords.accuracy)}, null);
+  }, function(err){
+    cb(null, err.code === 1 ? "Location access is denied. Allow location for this site in your browser or device settings, then try again."
+      : (err.code === 2 ? "Location is unavailable. Turn on your device location (GPS) and try again." : "Getting your location timed out. Make sure location is on and try again."));
+  }, {enableHighAccuracy:true, timeout:15000, maximumAge:0});
+}
+var puAction = null, puTimer = null;
+function showPunch(title, html, okLabel, fn, kind){
+  kind = kind || (fn ? "q" : "ok");
+  var ic = $("#puIcon"); ic.className = "swal-ic " + kind;
+  ic.innerHTML = kind === "ok" ? '<svg viewBox="0 0 52 52"><path d="M14 27l8 8 16-17" fill="none" stroke="currentColor" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/></svg>' : "";
+  $("#puTitle").textContent = title; $("#puBody").innerHTML = html;
+  $("#puOk").textContent = okLabel || "OK";
+  $("#puCancel").style.display = fn ? "" : "none";
+  puAction = fn;
+  clearTimeout(puTimer);
+  var bar = $("#puBar"); bar.style.transition = "none"; bar.style.width = "0";
+  if(kind === "ok"){
+    bar.style.width = "100%"; void bar.offsetWidth;
+    bar.style.transition = "width 5s linear"; bar.style.width = "0";
+    puTimer = setTimeout(function(){ closeModal("#mPunch"); }, 5000);
+  }
+  openModal("#mPunch");
+}
+$("#puCancel").addEventListener("click", function(){ puAction = null; clearTimeout(puTimer); closeModal("#mPunch"); });
+$("#puOk").addEventListener("click", function(){ clearTimeout(puTimer); var f = puAction; puAction = null; closeModal("#mPunch"); if(f) f(); });
+var punchBusy = false;
+var PUNCH_TEXT = {
+  in:    ["Do you want to start your shift?", "Your shift has started."],
+  out:   ["Do you want to end your shift?",   "Your shift is now over."],
+  bs:    ["Do you want to start your break?", "Your break has started."],
+  be:    ["Do you want to end your break?",   "Your break has ended."],
+  otIn:  ["Do you want to start overtime?",   "Your overtime has started."],
+  otOut: ["Do you want to end overtime?",     "Your overtime has ended."]
+};
+function stamp(field, label){
+  if(punchBusy) return;
+  var tx = PUNCH_TEXT[field];
+  showPunch(tx[0], "", "OK", function(){
+    punchBusy = true;
+    toast("Getting your location…");
+    getPunchLocation(function(loc, err){
+      punchBusy = false;
+      if(!loc){
+        showPunch(label + " not saved.", esc(err), "OK", null, "err");
+        return;
+      }
+      if(!commitStamp(field, label, nowHM(), loc)) return;
+      showPunch(tx[1], "Location retrieved: (" + loc.lat + ", " + loc.lng + ").", "OK", null, "ok");
+    });
+  });
+}
+function commitStamp(field, label, at, loc){
+  var l = todayLog(me), key = todayKey(), uid = me.id;
+  if(l[field]){ toast(label + " is already recorded."); return false; }
+  l[field] = at;
+  l.locs = l.locs || {};
+  l.locs[field] = loc;
+  save(); renderIntern();
+  checkDone(me, true);
+  fetchIp(function(ip){
+    if(!ip) return;
+    var day = userLogs(uid)[key];
+    if(!day || !day[field]) return;
+    day.ips = day.ips || {};
+    day.ips[field] = ip;
+    save();
+  });
+  return true;
+}
+
+wireHold($("#btnMain"), function(){
+  var l = todayLog(me);
+  if(!l.in) stamp("in", "Time in");
+  else if(!l.out){
+    if(l.bs && !l.be){ toast("End your break first."); return; }
+    stamp("out", "Time out");
+  }
+});
+wireHold($("#btnBreak"), function(){
+  var l = todayLog(me);
+  if(l.in && !l.bs) stamp("bs", "Break start");
+  else if(l.bs && !l.be) stamp("be", "Break end");
+});
+wireHold($("#btnOT"), function(){
+  var l = todayLog(me);
+  if(l.in && !l.otIn) stamp("otIn", "OT in");
+  else if(l.otIn && !l.otOut) stamp("otOut", "OT out");
+});
+$("#btnUndo").addEventListener("click", function(){
+  var l = todayLog(me), f = lastField(l);
+  if(!f){ toast("Nothing to delete today."); return; }
+  var names = {in:"Time in", bs:"Break start", be:"Break end", out:"Time out", otIn:"OT in", otOut:"OT out"};
+  showPunch("Do you want to delete your last entry?", esc(names[f]) + " at " + esc(l[f]) + " will be removed.", "OK", function(){
+    var d = todayLog(me);
+    if(d[f] === undefined) return;
+    delete d[f];
+    if(d.locs) delete d.locs[f];
+    if(d.ips) delete d.ips[f];
+    save(); renderIntern();
+    showPunch("Entry deleted.", esc(names[f]) + " has been removed.", "OK", null, "ok");
+  });
+});
+
+function openProgress(){ renderIntern(); paintLocation(); openModal("#mProg"); }
+$("#btnMeter").addEventListener("click", openProgress);
+$("#pgCert").addEventListener("click", function(){ closeModal("#mProg"); showCert(me); });
+$("#btnViewLogs").addEventListener("click", function(){
+  logMonthSel = todayKey().slice(0,7);
+  buildMonthSelect($("#logMonth"), me.id, logMonthSel);
+  renderLogTable();
+  show("logs");
+});
+$("#btnBackLogs").addEventListener("click", function(){ renderIntern(); show("intern"); });
+$("#logMonth").addEventListener("change", function(){ logMonthSel = this.value; renderLogTable(); });
+$("#btnMyCert").addEventListener("click", function(){ showCert(me); });
+
+/* ============================================================
+   month table
+   ============================================================ */
+function monthsFor(id){
+  var L = userLogs(id), set = {}, out = [];
+  for(var k in L) set[k.slice(0,7)] = 1;
+  set[todayKey().slice(0,7)] = 1;
+  for(var m in set) out.push(m);
+  out.sort(); out.reverse();
+  return out;
+}
+function monthLabel(m){ var p = m.split("-"); return MON[+p[1]-1] + " " + p[0]; }
+function buildMonthSelect(sel, id, current){
+  var list = monthsFor(id);
+  sel.innerHTML = list.map(function(m){ return '<option value="'+m+'">'+monthLabel(m)+"</option>"; }).join("");
+  sel.value = list.indexOf(current) >= 0 ? current : list[0];
+}
+function monthRows(id, m, editable){
+  var L = userLogs(id), p = m.split("-"), y = +p[0], mo = +p[1];
+  var days = new Date(y, mo, 0).getDate(), total = 0, html = "";
+  for(var d = 1; d <= days; d++){
+    var key = y + "-" + pad(mo) + "-" + pad(d);
+    var dt = new Date(y, mo-1, d), wd = dt.getDay();
+    var l = L[key] || {}, mins = dayMinutes(l);
+    total += mins;
+    var c = function(v){ return v || "-"; };
+    html += '<tr class="' + ((wd===0||wd===6) ? "we" : "") + '"' + (editable ? ' data-day="'+key+'" style="cursor:pointer"' : "") + ">" +
+      '<td class="d">' + d + " - " + DOW2[wd] + "</td>" +
+      "<td>" + c(l.in) + "</td><td>" + c(l.bs) + "</td><td>" + c(l.be) + "</td><td>" + c(l.out) + "</td>" +
+      "<td>" + c(l.otIn) + "</td><td>" + c(l.otOut) + "</td>" +
+      "<td><b>" + (mins ? fmtHrs(mins) : "-") + "</b></td></tr>";
+  }
+  var head = "<thead><tr><th>Date</th><th>Time In</th><th>Break Start</th><th>Break End</th><th>Time Out</th><th>OT In</th><th>OT Out</th><th>Hours</th></tr></thead>";
+  var foot = '<tfoot><tr><td class="d">Month total</td><td colspan="6"></td><td>' + fmtHrs(total) + "</td></tr></tfoot>";
+  return {html: head + "<tbody>" + html + "</tbody>" + foot, total: total};
+}
+function renderLogTable(){
+  var r = monthRows(me.id, logMonthSel, false);
+  $("#logTable").innerHTML = r.html;
+  var done = totalMinutes(me), req = requiredMinutes(me);
+  $("#logFootNote").textContent = "Overall: " + fmtHrs(done) + " of " + fmtNum(req/60) + " required hours" +
+    (me.adjustHours ? " (includes a " + (me.adjustHours > 0 ? "+" : "") + me.adjustHours + " hr adjustment)" : "");
+}
+
+/* ============================================================
+   completion + certificate
+   ============================================================ */
+var CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+function codeChecksum(body){
+  var h = 0, i;
+  for(i = 0; i < body.length; i++) h = (h * 31 + body.charCodeAt(i)) >>> 0;
+  return CODE_ALPHABET.charAt(h % 32) + CODE_ALPHABET.charAt(Math.floor(h / 32) % 32);
+}
+function makeCertCode(){
+  var core = "", i;
+  for(i = 0; i < 5; i++) core += CODE_ALPHABET.charAt(Math.floor(Math.random() * 32));
+  var body = "SSS-" + core;
+  return body + "-" + codeChecksum(body);
+}
+function codeWellFormed(code){
+  if(!/^SSS-[A-Z0-9]{5}-[A-Z0-9]{2}$/.test(code)) return false;
+  return codeChecksum(code.slice(0, 9)) === code.slice(10);
+}
+function apiBase(){ return SYNC.url ? SYNC.url.replace(/\/sync$/, "") : ""; }
+
+function checkDone(u, announce){
+  var done = totalMinutes(u), req = requiredMinutes(u);
+  if(done < req){
+    if(db.done[u.id]){ delete db.done[u.id]; save(); }
+    return;
+  }
+  if(!db.done[u.id]){ db.done[u.id] = {date: todayKey(), minutes: done, code: makeCertCode()}; save(); }
+  if(!db.done[u.id].code){ db.done[u.id].code = makeCertCode(); save(); }
+  if(u.role !== "intern" || me !== u) return;
+  if(announce || !db.done[u.id].seen){
+    db.done[u.id].seen = 1; save();
+    $("#doneMsg").textContent = u.name + ", you have completed the required hours for your internship at " + companyOf(u) + ".";
+    $("#doneHrs").textContent = fmtHrs(done);
+    $("#doneSub").textContent = "Required: " + fmtNum(req/60) + " hours · Completed on " + longDate(db.done[u.id].date);
+    certFor = u;
+    openModal("#mDone");
+  }
+}
+$("#btnGetCert").addEventListener("click", function(){ closeModal("#mDone"); showCert(certFor || me); });
+
+/* ============================================================
+   QR encoder — byte mode, error correction level M, versions 1-9
+   ============================================================ */
+function qrMatrix(text){
+  var EXP = [], LOG = [], x = 1, i, j;
+  for(i = 0; i < 255; i++){ EXP[i] = x; LOG[x] = i; x <<= 1; if(x & 0x100) x ^= 0x11d; }
+  for(i = 255; i < 512; i++) EXP[i] = EXP[i - 255];
+  function mul(a, b){ return (a === 0 || b === 0) ? 0 : EXP[LOG[a] + LOG[b]]; }
+  function genPoly(n){
+    var g = [1], k;
+    for(k = 0; k < n; k++){
+      var ng = [];
+      for(j = 0; j <= g.length; j++) ng[j] = 0;
+      for(j = 0; j < g.length; j++){ ng[j] ^= g[j]; ng[j + 1] ^= mul(g[j], EXP[k]); }
+      g = ng;
+    }
+    return g;
+  }
+  function rsEncode(data, n){
+    var g = genPoly(n), res = [], k;
+    for(k = 0; k < n; k++) res[k] = 0;
+    for(k = 0; k < data.length; k++){
+      var f = data[k] ^ res[0];
+      res.shift(); res.push(0);
+      if(f !== 0) for(j = 0; j < n; j++) res[j] ^= mul(g[j + 1], f);
+    }
+    return res;
+  }
+  var V = {1:[26,10,[[1,16]]], 2:[44,16,[[1,28]]], 3:[70,26,[[1,44]]], 4:[100,18,[[2,32]]],
+           5:[134,24,[[2,43]]], 6:[172,16,[[4,27]]], 7:[196,18,[[4,31]]],
+           8:[242,22,[[2,38],[2,39]]], 9:[292,22,[[3,36],[2,37]]]};
+  var ALIGN = {1:[], 2:[6,18], 3:[6,22], 4:[6,26], 5:[6,30], 6:[6,34], 7:[6,22,38], 8:[6,24,42], 9:[6,26,46]};
+  var REM = {1:0, 2:7, 3:7, 4:7, 5:7, 6:7, 7:0, 8:0, 9:0};
+
+  // alphanumeric mode is far denser, but it cannot carry lower case
+  var AL = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:";
+  var raw = String(text), up = raw.toUpperCase(), useAl = (raw === up);
+  if(useAl) for(i = 0; i < up.length; i++) if(AL.indexOf(up.charAt(i)) < 0){ useAl = false; break; }
+  var src = useAl ? up : unescape(encodeURIComponent(raw)), bytes = [];
+  for(i = 0; i < src.length; i++) bytes.push(src.charCodeAt(i) & 0xff);
+  var need = 4 + (useAl ? 9 : 8) +
+    (useAl ? (Math.floor(src.length / 2) * 11 + (src.length % 2 ? 6 : 0)) : src.length * 8);
+
+  var ver = 0, spec = null, dataCount = 0;
+  for(i = 1; i <= 9; i++){
+    var sp = V[i], dc = 0;
+    sp[2].forEach(function(g){ dc += g[0] * g[1]; });
+    if(dc * 8 >= need + 4){ ver = i; spec = sp; dataCount = dc; break; }
+  }
+  if(!ver) return null;
+
+  var bits = [];
+  function put(val, len){ for(var k = len - 1; k >= 0; k--) bits.push((val >> k) & 1); }
+  if(useAl){
+    put(2, 4); put(src.length, 9);
+    for(i = 0; i + 1 < src.length; i += 2)
+      put(AL.indexOf(src.charAt(i)) * 45 + AL.indexOf(src.charAt(i + 1)), 11);
+    if(src.length % 2) put(AL.indexOf(src.charAt(src.length - 1)), 6);
+  } else {
+    put(4, 4); put(src.length, 8);
+    bytes.forEach(function(b){ put(b, 8); });
+  }
+  var cap = dataCount * 8;
+  for(i = 0; i < 4 && bits.length < cap; i++) bits.push(0);
+  while(bits.length % 8) bits.push(0);
+  var pads = [0xec, 0x11], p = 0;
+  while(bits.length < cap) put(pads[p++ % 2], 8);
+
+  var cw = [];
+  for(i = 0; i < bits.length; i += 8){
+    var b8 = 0;
+    for(j = 0; j < 8; j++) b8 = (b8 << 1) | bits[i + j];
+    cw.push(b8);
+  }
+
+  var dataBlocks = [], ecBlocks = [], off = 0;
+  spec[2].forEach(function(g){
+    for(var k = 0; k < g[0]; k++){
+      var blk = cw.slice(off, off + g[1]);
+      off += g[1];
+      dataBlocks.push(blk);
+      ecBlocks.push(rsEncode(blk, spec[1]));
+    }
+  });
+
+  var out = [], maxData = 0;
+  dataBlocks.forEach(function(b){ if(b.length > maxData) maxData = b.length; });
+  for(i = 0; i < maxData; i++)
+    for(j = 0; j < dataBlocks.length; j++)
+      if(i < dataBlocks[j].length) out.push(dataBlocks[j][i]);
+  for(i = 0; i < spec[1]; i++)
+    for(j = 0; j < ecBlocks.length; j++) out.push(ecBlocks[j][i]);
+
+  var stream = [];
+  out.forEach(function(b){ for(var k = 7; k >= 0; k--) stream.push((b >> k) & 1); });
+  for(i = 0; i < REM[ver]; i++) stream.push(0);
+
+  var size = 17 + ver * 4, m = [], res = [];
+  for(i = 0; i < size; i++){
+    m.push(new Array(size).fill(0));
+    res.push(new Array(size).fill(0));
+  }
+  function set(r, c, v){ m[r][c] = v; res[r][c] = 1; }
+  function finder(r, c){
+    for(var dr = -1; dr <= 7; dr++)
+      for(var dc = -1; dc <= 7; dc++){
+        var rr = r + dr, cc = c + dc;
+        if(rr < 0 || cc < 0 || rr >= size || cc >= size) continue;
+        var on = (dr >= 0 && dr <= 6 && (dc === 0 || dc === 6)) ||
+                 (dc >= 0 && dc <= 6 && (dr === 0 || dr === 6)) ||
+                 (dr >= 2 && dr <= 4 && dc >= 2 && dc <= 4);
+        set(rr, cc, on ? 1 : 0);
+      }
+  }
+  finder(0, 0); finder(0, size - 7); finder(size - 7, 0);
+  for(i = 8; i < size - 8; i++){ set(6, i, i % 2 === 0 ? 1 : 0); set(i, 6, i % 2 === 0 ? 1 : 0); }
+  var ce = ALIGN[ver];
+  for(i = 0; i < ce.length; i++)
+    for(j = 0; j < ce.length; j++){
+      var ar = ce[i], ac = ce[j];
+      if((ar <= 7 && ac <= 7) || (ar <= 7 && ac >= size - 8) || (ar >= size - 8 && ac <= 7)) continue;
+      for(var d1 = -2; d1 <= 2; d1++)
+        for(var d2 = -2; d2 <= 2; d2++)
+          set(ar + d1, ac + d2, Math.max(Math.abs(d1), Math.abs(d2)) !== 1 ? 1 : 0);
+    }
+  set(size - 8, 8, 1);
+  if(ver >= 7){
+    var vd = ver << 12, vg = 0x1f25, vi;
+    for(vi = 17; vi >= 12; vi--) if((vd >> vi) & 1) vd ^= vg << (vi - 12);
+    var vbits = (ver << 12) | vd;
+    for(vi = 0; vi < 18; vi++){
+      var vbit = (vbits >> vi) & 1, va = Math.floor(vi / 3), vb = vi % 3;
+      set(va, size - 11 + vb, vbit);
+      set(size - 11 + vb, va, vbit);
+    }
+  }
+  for(i = 0; i <= 8; i++){
+    if(!res[8][i]) set(8, i, 0);
+    if(!res[i][8]) set(i, 8, 0);
+  }
+  for(i = 0; i < 8; i++){
+    if(!res[8][size - 1 - i]) set(8, size - 1 - i, 0);
+    if(!res[size - 1 - i][8]) set(size - 1 - i, 8, 0);
+  }
+
+  var pos = 0, up = true;
+  for(var col = size - 1; col > 0; col -= 2){
+    if(col === 6) col--;
+    for(var n = 0; n < size; n++){
+      var row = up ? size - 1 - n : n;
+      for(var q = 0; q < 2; q++){
+        var c2 = col - q;
+        if(res[row][c2]) continue;
+        m[row][c2] = pos < stream.length ? stream[pos] : 0;
+        pos++;
+      }
+    }
+    up = !up;
+  }
+
+  function maskFn(k, r, c){
+    switch(k){
+      case 0: return (r + c) % 2 === 0;
+      case 1: return r % 2 === 0;
+      case 2: return c % 3 === 0;
+      case 3: return (r + c) % 3 === 0;
+      case 4: return (Math.floor(r / 2) + Math.floor(c / 3)) % 2 === 0;
+      case 5: return ((r * c) % 2) + ((r * c) % 3) === 0;
+      case 6: return (((r * c) % 2) + ((r * c) % 3)) % 2 === 0;
+      default: return (((r + c) % 2) + ((r * c) % 3)) % 2 === 0;
+    }
+  }
+  function fmtBits(mask){
+    var data = mask, v = data << 10, g = 0x537, k;
+    for(k = 14; k >= 10; k--) if((v >> k) & 1) v ^= g << (k - 10);
+    return ((data << 10) | v) ^ 0x5412;
+  }
+  function placeFormat(grid, mask){
+    var f = fmtBits(mask), k;
+    for(k = 0; k <= 5; k++) grid[8][k] = (f >> k) & 1;
+    grid[8][7] = (f >> 6) & 1;
+    grid[8][8] = (f >> 7) & 1;
+    grid[7][8] = (f >> 8) & 1;
+    for(k = 9; k <= 14; k++) grid[14 - k][8] = (f >> k) & 1;
+    for(k = 0; k <= 6; k++) grid[size - 1 - k][8] = (f >> k) & 1;
+    for(k = 7; k <= 14; k++) grid[8][size - 15 + k] = (f >> k) & 1;
+    grid[size - 8][8] = 1;
+  }
+  function penalty(grid){
+    var score = 0, r, c, run, dark = 0, t;
+    for(r = 0; r < size; r++){
+      run = 1;
+      for(c = 1; c < size; c++){
+        if(grid[r][c] === grid[r][c - 1]) run++;
+        else { if(run >= 5) score += run - 2; run = 1; }
+      }
+      if(run >= 5) score += run - 2;
+    }
+    for(c = 0; c < size; c++){
+      run = 1;
+      for(r = 1; r < size; r++){
+        if(grid[r][c] === grid[r - 1][c]) run++;
+        else { if(run >= 5) score += run - 2; run = 1; }
+      }
+      if(run >= 5) score += run - 2;
+    }
+    for(r = 0; r < size - 1; r++)
+      for(c = 0; c < size - 1; c++){
+        var a = grid[r][c];
+        if(a === grid[r][c + 1] && a === grid[r + 1][c] && a === grid[r + 1][c + 1]) score += 3;
+      }
+    var p1 = [1,0,1,1,1,0,1,0,0,0,0], p2 = [0,0,0,0,1,0,1,1,1,0,1];
+    function look(arr){
+      var hit = 0, k;
+      for(k = 0; k + 11 <= arr.length; k++){
+        var o1 = true, o2 = true;
+        for(t = 0; t < 11; t++){ if(arr[k + t] !== p1[t]) o1 = false; if(arr[k + t] !== p2[t]) o2 = false; }
+        if(o1 || o2) hit += 40;
+      }
+      return hit;
+    }
+    for(r = 0; r < size; r++) score += look(grid[r]);
+    for(c = 0; c < size; c++){
+      var colArr = [];
+      for(r = 0; r < size; r++) colArr.push(grid[r][c]);
+      score += look(colArr);
+    }
+    for(r = 0; r < size; r++) for(c = 0; c < size; c++) if(grid[r][c]) dark++;
+    score += Math.floor(Math.abs(dark * 100 / (size * size) - 50) / 5) * 10;
+    return score;
+  }
+
+  var best = null, bestScore = Infinity;
+  for(var mk = 0; mk < 8; mk++){
+    var g2 = m.map(function(row){ return row.slice(); });
+    for(i = 0; i < size; i++)
+      for(j = 0; j < size; j++)
+        if(!res[i][j] && maskFn(mk, i, j)) g2[i][j] ^= 1;
+    placeFormat(g2, mk);
+    var sc = penalty(g2);
+    if(sc < bestScore){ bestScore = sc; best = g2; }
+  }
+  return best;
+}
+
+function drawQR(ctx, text, x, y, box){
+  var g = qrMatrix(text);
+  if(!g) return;
+  var n = g.length, quiet = 4;
+  var unit = Math.max(1, Math.floor(box / (n + quiet * 2)));
+  var side = unit * (n + quiet * 2);
+  var ox = Math.round(x + (box - side) / 2), oy = Math.round(y + (box - side) / 2);
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(ox, oy, side, side);
+  ctx.fillStyle = "#000000";
+  for(var r = 0; r < n; r++)
+    for(var c = 0; c < n; c++)
+      if(g[r][c]) ctx.fillRect(ox + (c + quiet) * unit, oy + (r + quiet) * unit, unit, unit);
+}
+
+/* ============================================================
+   PDF writer — A4 landscape, JPEG background, editable fields
+   ============================================================ */
+/* Minimal PDF writer: one A4 landscape page with a JPEG background and
+   AcroForm text fields that stay editable after export. */
+
+var HELV_W = [278,278,355,556,556,889,667,191,333,333,389,584,278,333,278,278,
+  556,556,556,556,556,556,556,556,556,556,278,278,584,584,584,556,
+  1015,667,667,722,722,667,611,778,722,278,500,667,556,833,722,778,
+  667,778,722,667,611,722,667,944,667,667,611,278,278,278,469,556,
+  333,556,556,500,556,556,278,556,556,222,222,500,222,833,556,556,
+  556,556,333,500,278,556,500,722,500,500,500,334,260,334,584];
+var HELVB_W = [278,333,474,556,556,889,722,238,333,333,389,584,278,333,278,278,
+  556,556,556,556,556,556,556,556,556,556,333,333,584,584,584,611,
+  975,722,722,722,722,667,611,778,722,278,556,722,611,833,722,778,
+  667,778,722,667,611,722,667,944,667,667,611,333,278,333,584,556,
+  333,556,611,556,611,556,333,611,611,278,278,556,278,889,611,611,
+  611,611,389,556,333,611,556,778,556,556,500,389,280,389,584];
+
+function pdfTextWidth(text, size, bold){
+  var t = HELV_W, s = String(text), w = 0, i, c;
+  if(bold) t = HELVB_W;
+  for(i = 0; i < s.length; i++){
+    c = s.charCodeAt(i);
+    w += (c >= 32 && c <= 126) ? t[c - 32] : 556;
+  }
+  return w * size / 1000;
+}
+function pdfEscape(s){
+  return String(s).replace(/[\\()]/g, function(c){ return "\\" + c; })
+    .replace(/[^\x20-\x7e]/g, function(c){
+      var o = c.charCodeAt(0);
+      return o < 256 ? "\\" + ("000" + o.toString(8)).slice(-3) : "?";
+    });
+}
+function strBytes(s){
+  var a = new Uint8Array(s.length), i;
+  for(i = 0; i < s.length; i++) a[i] = s.charCodeAt(i) & 0xff;
+  return a;
+}
+
+/* fields: [{name, text, cx, y, size, font, rgb, width}]
+     cx, y, width  fractions of the page (y measured from the top, at the baseline)
+     size          font size as a fraction of the page width
+     font          "n" | "b" | "o" | "bo"
+     rgb           [r,g,b] 0..1                                              */
+function buildCertPdf(jpeg, imgW, imgH, fields){
+  var W = 842, H = 595;
+  var FONTS = {n:["Helv", 6, false], b:["HelvB", 7, true], o:["HelvO", 8, false], bo:["HelvBO", 9, true]};
+  var parts = [], len = 0, off = [];
+  function push(x){
+    var a = (typeof x === "string") ? strBytes(x) : x;
+    parts.push(a); len += a.length;
+  }
+  function obj(n, body, extra){
+    off[n] = len;
+    push(n + " 0 obj\n" + body);
+    if(extra) push(extra);
+    push("\nendobj\n");
+  }
+
+  var first = 10, refs = [], i;
+  for(i = 0; i < fields.length; i++) refs.push((first + i * 2) + " 0 R");
+
+  push("%PDF-1.5\n%\xe2\xe3\xcf\xd3\n");
+
+  obj(1, "<< /Type /Catalog /Pages 2 0 R /AcroForm << /Fields [" + refs.join(" ") +
+    "] /DA (/Helv 12 Tf 0 g) /NeedAppearances true /DR << /Font << /Helv 6 0 R /HelvB 7 0 R /HelvO 8 0 R /HelvBO 9 0 R >> >> >> >>");
+  obj(2, "<< /Type /Pages /Kids [3 0 R] /Count 1 >>");
+  obj(3, "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 " + W + " " + H + "] " +
+    "/Resources << /XObject << /Im0 5 0 R >> /Font << /Helv 6 0 R /HelvB 7 0 R /HelvO 8 0 R /HelvBO 9 0 R >> >> " +
+    "/Contents 4 0 R /Annots [" + refs.join(" ") + "] >>");
+
+  var content = "q " + W + " 0 0 " + H + " 0 0 cm /Im0 Do Q\n";
+  obj(4, "<< /Length " + content.length + " >>\nstream\n" + content + "endstream");
+
+  off[5] = len;
+  push("5 0 obj\n<< /Type /XObject /Subtype /Image /Width " + imgW + " /Height " + imgH +
+    " /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length " + jpeg.length + " >>\nstream\n");
+  push(jpeg);
+  push("\nendstream\nendobj\n");
+
+  obj(6, "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>");
+  obj(7, "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>");
+  obj(8, "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Oblique /Encoding /WinAnsiEncoding >>");
+  obj(9, "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-BoldOblique /Encoding /WinAnsiEncoding >>");
+
+  fields.forEach(function(f, k){
+    var fn = FONTS[f.font] || FONTS.n;
+    var size = f.size * W;
+    var boxW = (f.width || 0.8) * W;
+    var x0 = f.cx * W - boxW / 2;
+    var baseline = H - f.y * H;
+    var y0 = baseline - size * 0.30, y1 = baseline + size * 1.05;
+    var rgb = f.rgb || [0, 0, 0];
+    var col = rgb[0].toFixed(3) + " " + rgb[1].toFixed(3) + " " + rgb[2].toFixed(3) + " rg";
+    var da = "/" + fn[0] + " " + size.toFixed(2) + " Tf " + col;
+    var tw = pdfTextWidth(f.text, size, fn[2]);
+    var tx = (boxW - tw) / 2, ty = baseline - y0;
+    var ap = "/Tx BMC q BT " + da + " " + tx.toFixed(2) + " " + ty.toFixed(2) +
+      " Td (" + pdfEscape(f.text) + ") Tj ET Q EMC\n";
+    var fieldNo = first + k * 2, apNo = fieldNo + 1;
+
+    obj(fieldNo, "<< /Type /Annot /Subtype /Widget /FT /Tx /Ff 0 /Q 1 /F 4 /P 3 0 R" +
+      " /T (" + pdfEscape(f.name) + ") /V (" + pdfEscape(f.text) + ") /DV (" + pdfEscape(f.text) + ")" +
+      " /DA (" + da + ") /Rect [" + x0.toFixed(2) + " " + y0.toFixed(2) + " " + (x0 + boxW).toFixed(2) + " " + y1.toFixed(2) + "]" +
+      " /MK << /BC [] /BG [] >> /AP << /N " + apNo + " 0 R >> >>");
+
+    obj(apNo, "<< /Type /XObject /Subtype /Form /BBox [0 0 " + boxW.toFixed(2) + " " + (y1 - y0).toFixed(2) + "]" +
+      " /Resources << /Font << /" + fn[0] + " " + fn[1] + " 0 R >> >> /Length " + ap.length + " >>\nstream\n" + ap + "endstream");
+  });
+
+  var count = first + fields.length * 2;
+  var xrefAt = len;
+  var xref = "xref\n0 " + count + "\n0000000000 65535 f \n";
+  for(i = 1; i < count; i++){
+    xref += ("0000000000" + (off[i] || 0)).slice(-10) + " 00000 n \n";
+  }
+  push(xref);
+  push("trailer\n<< /Size " + count + " /Root 1 0 R >>\nstartxref\n" + xrefAt + "\n%%EOF\n");
+
+  var total = 0;
+  parts.forEach(function(p){ total += p.length; });
+  var out = new Uint8Array(total), at = 0;
+  parts.forEach(function(p){ out.set(p, at); at += p.length; });
+  return out;
+}
+
+/* ============================================================
+   certificate — A4 landscape, 300 dpi (3508 x 2480)
+   ============================================================ */
+function tracked(ctx, text, cx, y, spacing){
+  var chars = String(text).split(""), w = 0, i;
+  for(i = 0; i < chars.length; i++) w += ctx.measureText(chars[i]).width + spacing;
+  w -= spacing;
+  var px = cx - w / 2;
+  ctx.textAlign = "left";
+  for(i = 0; i < chars.length; i++){
+    ctx.fillText(chars[i], px, y);
+    px += ctx.measureText(chars[i]).width + spacing;
+  }
+  ctx.textAlign = "center";
+  return w;
+}
+function roundRect(ctx, x, y, w, h, r){
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y); ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r); ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h); ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r); ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+}
+function goldGrad(ctx, x0, y0, x1, y1){
+  var g = ctx.createLinearGradient(x0, y0, x1, y1);
+  g.addColorStop(0, "#9c6f16"); g.addColorStop(0.18, "#f3dd97");
+  g.addColorStop(0.42, "#c99b2b"); g.addColorStop(0.66, "#fbeec2");
+  g.addColorStop(0.85, "#cfa337"); g.addColorStop(1, "#8f6512");
+  return g;
+}
+function swoosh(ctx, W, H, a1, b1, a2, b2, style){
+  function pts(a, b){
+    return [a * W, 0, a * 0.44 * W, b * 0.24 * H, a * 0.16 * W, b * 0.58 * H, 0, b * H];
+  }
+  var o = pts(a1, b1), i = pts(a2, b2);
+  ctx.beginPath();
+  ctx.moveTo(o[0], o[1]);
+  ctx.bezierCurveTo(o[2], o[3], o[4], o[5], o[6], o[7]);
+  ctx.lineTo(i[6], i[7]);
+  ctx.bezierCurveTo(i[4], i[5], i[2], i[3], i[0], i[1]);
+  ctx.closePath();
+  ctx.fillStyle = style;
+  ctx.fill();
+}
+function cornerArt(ctx, W, H, flip){
+  ctx.save();
+  if(flip){ ctx.translate(W, H); ctx.rotate(Math.PI); }
+  var navy = ctx.createLinearGradient(W * 0.30, 0, 0, H * 0.62);
+  navy.addColorStop(0, "#0a2f74"); navy.addColorStop(0.42, "#1e57b4");
+  navy.addColorStop(0.78, "#123e8d"); navy.addColorStop(1, "#0a2a63");
+
+  // outermost golden ribbon
+  swoosh(ctx, W, H, 0.300, 0.720, 0.276, 0.662, goldGrad(ctx, W * 0.29, 0, 0, H * 0.68));
+  // deep blue ribbon
+  swoosh(ctx, W, H, 0.269, 0.642, 0.198, 0.487, navy);
+  // wide golden ribbon
+  swoosh(ctx, W, H, 0.190, 0.467, 0.154, 0.382, goldGrad(ctx, W * 0.18, 0, 0, H * 0.43));
+  // thin blue hairline
+  swoosh(ctx, W, H, 0.146, 0.362, 0.134, 0.335, navy);
+  // innermost golden hairline
+  swoosh(ctx, W, H, 0.126, 0.313, 0.117, 0.292, goldGrad(ctx, W * 0.12, 0, 0, H * 0.30));
+  ctx.restore();
+}
+function certBackdrop(ctx, W, H){
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(0, 0, W, H);
+
+  cornerArt(ctx, W, H, false);
+  cornerArt(ctx, W, H, true);
+
+  ctx.strokeStyle = goldGrad(ctx, W * 0.1, 0, W * 0.9, H);
+  ctx.lineWidth = W * 0.0026;
+  roundRect(ctx, W * 0.023, H * 0.032, W * 0.954, H * 0.936, W * 0.030);
+  ctx.stroke();
+  ctx.lineWidth = W * 0.0016;
+  roundRect(ctx, W * 0.036, H * 0.051, W * 0.928, H * 0.898, W * 0.024);
+  ctx.stroke();
+}
+
+function certOrgText(u){
+  var st = db.settings;
+  if(u && u.company && u.company.trim()) return u.company.trim();
+  var parts = [];
+  if(st.company) parts.push(st.company);
+  if(st.branch) parts.push(st.branch);
+  return parts.join(", ");
+}
+function compactCode(code){ return String(code).replace(/^SSS-/i, "").replace(/-/g, "").toUpperCase(); }
+function expandCode(raw){
+  var c = String(raw || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+  if(c.length === 10 && c.indexOf("SSS") === 0) c = c.slice(3);
+  if(c.length !== 7) return "";
+  return "SSS-" + c.slice(0, 5) + "-" + c.slice(5);
+}
+function verifyUrl(code){
+  var base = "";
+  if(location.protocol !== "file:") base = location.origin + location.pathname;
+  if(!base) return code;
+  base = base.replace(/[?#].*$/, "").replace(/index\.html?$/i, "");
+  if(base.charAt(base.length - 1) !== "/") base += "/";
+  return base + "v/" + compactCode(code);
+}
+function certPayload(u){
+  var req = requiredMinutes(u), done = totalMinutes(u);
+  var rec = db.done[u.id] || { date: todayKey() };
+  return {
+    code: rec.code || "",
+    short: rec.short || "",
+    qr: rec.qr ? 1 : 0,
+    date: rec.date || todayKey(),
+    required: fmtNum(req / 60),
+    rendered: fmtHrs(done),
+    orgText: certOrgText(u),
+    name: u.name
+  };
+}
+
+var IMGC = {};
+function loadImg(src, cb){
+  if(!src){ cb(null); return; }
+  if(IMGC[src] !== undefined){ cb(IMGC[src]); return; }
+  var im = new Image();
+  im.onload = function(){ IMGC[src] = im; cb(im); };
+  im.onerror = function(){ IMGC[src] = null; cb(null); };
+  im.src = src;
+}
+
+var certQR = false, certArgs = null;
+function paintQRButton(){
+  var b = $("#btnQRGen");
+  if(!b) return;
+  var code = certArgs && (certArgs.preview || certPayload(certArgs.u)).code;
+  b.disabled = !code;
+  b.textContent = certQR ? "Remove QR code" : "Generate QR code";
+}
+function showCert(u, preview){
+  certFor = preview ? null : u;
+  var rec = (!preview && u) ? db.done[u.id] : null;
+  certQR = !!(rec && rec.qr);
+  loadImg(LOGO_SSS, function(logo){
+    certArgs = {u: u, preview: preview, logo: logo};
+    paintCert(u, preview, logo);
+    paintQRButton();
+    paintCertAdmin();
+    openModal("#mCert");
+  });
+}
+function isAdmin(){ return !!(me && me.role === "admin"); }
+function paintCertAdmin(){
+  var row = $("#certAdmin"), rec = certArgs && !certArgs.preview && certArgs.u ? db.done[certArgs.u.id] : null;
+  row.classList.toggle("hide", !(isAdmin() && rec));
+  if(rec) $("#certDate").value = rec.date || todayKey();
+  $("#btnPdfCert").textContent = isAdmin() ? "Save as editable PDF" : "Save as PDF";
+  $("#certTitle").textContent = "Certificate · " + (certOrgText(certArgs && certArgs.u) || "Completion");
+}
+$("#certDate").addEventListener("change", function(){
+  var rec = certArgs && certArgs.u ? db.done[certArgs.u.id] : null;
+  if(!rec || !this.value) return;
+  rec.date = this.value;
+  save();
+  paintCert(certArgs.u, certArgs.preview, certArgs.logo);
+  toast("Issue date set to " + longDate(this.value) + ".");
+});
+
+function dataUrlBytes(url){
+  var bin = atob(url.slice(url.indexOf(",") + 1));
+  var out = new Uint8Array(bin.length), i;
+  for(i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+  return out;
+}
+$("#btnPdfCert").addEventListener("click", function(){
+  if(!certArgs) return;
+  var cv = $("#certCanvas"), editable = isAdmin();
+  try{
+    // admins get live text fields, so the wording is left off the background;
+    // interns get the finished artwork with nothing editable
+    var fields = [];
+    if(editable){
+      certPlain = true;
+      paintCert(certArgs.u, certArgs.preview, certArgs.logo);
+      fields = certFieldDefs.slice();
+    }
+
+    var tmp = document.createElement("canvas");
+    tmp.width = 2480; tmp.height = 1754;
+    var tc = tmp.getContext("2d");
+    tc.fillStyle = "#ffffff"; tc.fillRect(0, 0, tmp.width, tmp.height);
+    tc.drawImage(cv, 0, 0, tmp.width, tmp.height);
+    var jpeg = dataUrlBytes(tmp.toDataURL("image/jpeg", 0.88));
+
+    certPlain = false;
+    paintCert(certArgs.u, certArgs.preview, certArgs.logo);
+
+    var pdf = buildCertPdf(jpeg, tmp.width, tmp.height, fields);
+    var p = certArgs.preview || certPayload(certArgs.u);
+    var name = (p.name || "intern").replace(/[^a-z0-9]+/gi, "-").toLowerCase();
+    var blob = new Blob([pdf], {type: "application/pdf"});
+    var url = URL.createObjectURL(blob), a = document.createElement("a");
+    a.href = url;
+    a.download = "certificate-" + name + (p.code ? "-" + p.code : "") + ".pdf";
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 6000);
+    toast(editable ? "PDF saved — every line stays editable." : "PDF saved.");
+  }catch(err){
+    certPlain = false;
+    paintCert(certArgs.u, certArgs.preview, certArgs.logo);
+    toast("The PDF could not be built on this device.");
+  }
+});
+
+function shortenLink(cb){
+  var rec = certArgs && certArgs.u ? db.done[certArgs.u.id] : null;
+  var code = rec && rec.code;
+  if(!rec || !code || rec.short || !apiBase()){ cb(); return; }
+  fetch(apiBase() + "/shorten", {
+    method: "POST",
+    headers: {"Content-Type": "application/json", "x-app-key": SYNC.key},
+    body: JSON.stringify({url: verifyUrl(code), backhalf: compactCode(code)})
+  }).then(function(r){ return r.json(); })
+    .then(function(d){
+      if(d && d.link){
+        rec.short = d.link;
+        save();
+        if(d.custom === false && d.reason) toast("Short link made, plain back-half (" + d.reason + ").");
+      } else if(d && d.reason){
+        toast("Using the built-in short link (" + d.reason + ").");
+      }
+      cb();
+    })
+    .catch(function(){ cb(); });
+}
+$("#btnQRGen").addEventListener("click", function(){
+  if(!certArgs) return;
+  var rec = certArgs.u && !certArgs.preview ? db.done[certArgs.u.id] : null;
+  if(certQR){
+    certQR = false;
+    if(rec){ rec.qr = 0; save(); }
+    paintCert(certArgs.u, certArgs.preview, certArgs.logo);
+    paintQRButton();
+    toast("QR code removed.");
+    return;
+  }
+  var btn = this;
+  btn.disabled = true; btn.textContent = "Shortening link…";
+  shortenLink(function(){
+    certQR = true;
+    if(rec){ rec.qr = 1; save(); }
+    paintCert(certArgs.u, certArgs.preview, certArgs.logo);
+    btn.disabled = false;
+    paintQRButton();
+    toast("QR code saved — it now appears on this certificate every time.");
+  });
+});
+
+var certFieldDefs = [], certPlain = false;
+function hexRgb(h){
+  return [parseInt(h.substr(1,2),16)/255, parseInt(h.substr(3,2),16)/255, parseInt(h.substr(5,2),16)/255];
+}
+function paintCert(u, preview, logo){
+  var cv = $("#certCanvas"), ctx = cv.getContext("2d");
+  var W = cv.width, H = cv.height, cx = W / 2;
+  var st = db.settings, p = preview || certPayload(u);
+  var dp = p.date.split("-"), dObj = new Date(+dp[0], +dp[1] - 1, +dp[2]);
+  var INK = "#123f92", INK2 = "#1a52a8";
+  certFieldDefs = [];
+
+  // draws a line and remembers it as an editable PDF field
+  function put(name, text, cxf, yf, sizeF, css, pdfFont, color, widthF){
+    ctx.fillStyle = color;
+    ctx.font = css;
+    if(!certPlain) ctx.fillText(text, cxf * W, yf * H);
+    certFieldDefs.push({name: name, text: text, cx: cxf, y: yf, size: sizeF,
+      font: pdfFont, rgb: hexRgb(color), width: widthF || 0.8});
+  }
+
+  ctx.clearRect(0, 0, W, H);
+  certBackdrop(ctx, W, H);
+  ctx.textAlign = "center";
+
+  // ---------- header: logo beside the office name ----------
+  var line1 = (st.company || "").toUpperCase(), line2 = st.branch || "";
+  ctx.font = "bold " + Math.round(W * 0.0255) + "px 'Segoe UI', Arial, sans-serif";
+  var w1 = ctx.measureText(line1).width;
+  ctx.font = "bold italic " + Math.round(W * 0.0235) + "px 'Segoe UI', Arial, sans-serif";
+  var w2 = ctx.measureText(line2).width;
+  var textW = Math.max(w1, w2);
+  var logoH = H * 0.098, logoW = logo ? logo.width / logo.height * logoH : 0;
+  var gap = logo ? W * 0.014 : 0;
+  var x0 = cx - (logoW + gap + textW) / 2;
+  if(logo) ctx.drawImage(logo, x0, H * 0.060, logoW, logoH);
+  var tcx = x0 + logoW + gap + textW / 2;
+  var headW = textW / W + 0.05;
+  put("office", line1, tcx / W, 0.108, 0.0255,
+    "bold " + Math.round(W * 0.0255) + "px 'Segoe UI', Arial, sans-serif", "b", INK, headW);
+  if(line2){
+    put("branch", line2, tcx / W, 0.148, 0.0235,
+      "bold italic " + Math.round(W * 0.0235) + "px 'Segoe UI', Arial, sans-serif", "bo", INK2, headW);
+  }
+
+  // ---------- title ----------
+  ctx.fillStyle = INK2;
+  ctx.font = "600 " + Math.round(W * 0.0345) + "px 'Segoe UI', Arial, sans-serif";
+  tracked(ctx, "CERTIFICATE OF", cx, H * 0.243, W * 0.0185);
+
+  ctx.fillStyle = INK;
+  ctx.font = "bold " + Math.round(W * 0.075) + "px 'Segoe UI', Arial, sans-serif";
+  tracked(ctx, "COMPLETION", cx, H * 0.330, W * 0.0015);
+
+  // ---------- gold divider with diamond ----------
+  var dy = H * 0.358;
+  ctx.strokeStyle = goldGrad(ctx, cx - W * 0.25, 0, cx + W * 0.25, 0);
+  ctx.lineWidth = W * 0.0022;
+  ctx.beginPath();
+  ctx.moveTo(cx - W * 0.235, dy); ctx.lineTo(cx - W * 0.022, dy);
+  ctx.moveTo(cx + W * 0.022, dy); ctx.lineTo(cx + W * 0.235, dy);
+  ctx.stroke();
+  ctx.fillStyle = goldGrad(ctx, cx - W * 0.016, dy - W * 0.014, cx + W * 0.016, dy + W * 0.014);
+  ctx.beginPath();
+  ctx.moveTo(cx, dy - W * 0.0135); ctx.lineTo(cx + W * 0.0135, dy);
+  ctx.lineTo(cx, dy + W * 0.0135); ctx.lineTo(cx - W * 0.0135, dy);
+  ctx.closePath(); ctx.fill();
+  ctx.fillStyle = INK;
+  ctx.beginPath();
+  ctx.moveTo(cx, dy - W * 0.0072); ctx.lineTo(cx + W * 0.0072, dy);
+  ctx.lineTo(cx, dy + W * 0.0072); ctx.lineTo(cx - W * 0.0072, dy);
+  ctx.closePath(); ctx.fill();
+
+  // ---------- name ----------
+  ctx.fillStyle = INK2;
+  ctx.font = Math.round(W * 0.0205) + "px 'Segoe UI', Arial, sans-serif";
+  ctx.fillText("This is to certify that", cx, H * 0.408);
+
+  put("intern_name", p.name, 0.5, 0.482, 0.056,
+    "bold italic " + Math.round(W * 0.056) + "px Georgia, 'Times New Roman', serif", "bo", INK, 0.78);
+
+  // gold rule with bracket ends
+  var ry = H * 0.518, rx0 = W * 0.150, rx1 = W * 0.850, tick = H * 0.011;
+  ctx.strokeStyle = goldGrad(ctx, rx0, 0, rx1, 0);
+  ctx.lineWidth = W * 0.0026;
+  ctx.beginPath();
+  ctx.moveTo(rx0, ry + tick); ctx.lineTo(rx0 + W * 0.012, ry);
+  ctx.lineTo(rx1 - W * 0.012, ry); ctx.lineTo(rx1, ry + tick);
+  ctx.stroke();
+
+  // ---------- body ----------
+  var leadLine = "has satisfactorily completed the required " + p.required + " hours of On-the-job Training at";
+  var leadSize = W * 0.0185;
+  ctx.font = Math.round(leadSize) + "px 'Segoe UI', Arial, sans-serif";
+  while(ctx.measureText(leadLine).width > W * 0.82 && leadSize > W * 0.013){
+    leadSize -= W * 0.0006;
+    ctx.font = Math.round(leadSize) + "px 'Segoe UI', Arial, sans-serif";
+  }
+  put("hours_line", leadLine, 0.5, 0.570, leadSize / W,
+    Math.round(leadSize) + "px 'Segoe UI', Arial, sans-serif", "n", INK2, 0.88);
+
+  var orgLine = p.orgText + ",";
+  var size = W * 0.0225;
+  ctx.font = "bold " + Math.round(size) + "px 'Segoe UI', Arial, sans-serif";
+  while(ctx.measureText(orgLine).width > W * 0.74 && size > W * 0.014){
+    size -= W * 0.0008;
+    ctx.font = "bold " + Math.round(size) + "px 'Segoe UI', Arial, sans-serif";
+  }
+  put("training_line", orgLine, 0.5, 0.618, size / W,
+    "bold " + Math.round(size) + "px 'Segoe UI', Arial, sans-serif", "b", INK, 0.86);
+
+  put("total_line", "rendering a total of " + p.rendered + " hours of service.", 0.5, 0.662, 0.0185,
+    Math.round(W * 0.0185) + "px 'Segoe UI', Arial, sans-serif", "n", INK2, 0.82);
+
+  put("message_1", "Congratulations on a job well done,", 0.5, 0.726, 0.0285,
+    "italic " + Math.round(W * 0.0285) + "px Georgia, 'Times New Roman', serif", "o", INK2, 0.7);
+  put("message_2", "and best wishes in your future endeavors.", 0.5, 0.770, 0.0285,
+    "italic " + Math.round(W * 0.0285) + "px Georgia, 'Times New Roman', serif", "o", INK2, 0.7);
+
+  put("date_issued", "Given this " + ordinal(dObj.getDate()) + " day of " + MON[dObj.getMonth()] + " " + dObj.getFullYear() + ".",
+    0.5, 0.818, 0.0148, Math.round(W * 0.0148) + "px 'Segoe UI', Arial, sans-serif", "n", INK2, 0.6);
+
+  // ---------- signatory ----------
+  var sy = H * 0.872;
+  ctx.strokeStyle = INK; ctx.lineWidth = W * 0.0014;
+  ctx.beginPath(); ctx.moveTo(cx - W * 0.175, sy); ctx.lineTo(cx + W * 0.175, sy); ctx.stroke();
+  put("signatory", (st.signatory || st.company || "").toUpperCase(), 0.5, 0.872 + 0.030, 0.0185,
+    "bold " + Math.round(W * 0.0185) + "px 'Segoe UI', Arial, sans-serif", "b", INK, 0.45);
+  put("position", st.signatoryTitle || "Authorized signatory", 0.5, 0.872 + 0.060, 0.0155,
+    Math.round(W * 0.0155) + "px 'Segoe UI', Arial, sans-serif", "n", INK2, 0.45);
+
+  // ---------- verification QR, bottom left ----------
+  if(p.code && certQR){
+    var box = W * 0.113, qx = W * 0.068, qy = H * 0.636;
+    // bit.ly paths are case sensitive, so only our own link is upper cased
+    drawQR(ctx, p.short || verifyUrl(p.code).toUpperCase(), qx, qy, box);
+    ctx.fillStyle = INK;
+    ctx.font = "bold " + Math.round(W * 0.0135) + "px 'Segoe UI', Arial, sans-serif";
+    ctx.fillText(p.code, qx + box / 2, qy + box + W * 0.025);
+  }
+
+  $("#certCode").textContent = p.code ? p.code + " · " + (p.short || verifyUrl(p.code)) : "";
+  return p;
+}
+function verifyResultHtml(d){
+  if(!d || !d.valid){
+    return '<div class="note" style="background:#fdecec;border-color:#f0c2c2;color:#8d2f2f">' +
+      esc((d && d.reason) || "No certificate matches that code.") + "</div>";
+  }
+  return '<div class="card pad" style="border-color:#bde3cf;background:#f2fbf6;color:#20303a">' +
+    '<div class="tag ok" style="display:inline-block">Verified</div>' +
+    '<div style="font-size:20px;font-weight:700;margin-top:8px">' + esc(d.name || "") + "</div>" +
+    '<div class="small" style="color:#5c7a6c">SSS · Student Intern</div>' +
+    '<div class="kv" style="margin-top:10px;color:#5c7a6c">' +
+      "<span>Required <b>" + esc(String(d.requiredHours)) + "</b> hrs</span>" +
+      "<span>Rendered <b>" + esc(String(d.renderedHours)) + "</b> hrs</span>" +
+    "</div>" +
+    '<div class="small" style="margin-top:6px;color:#5c7a6c">Completed ' + esc(d.date ? longDate(d.date) : "") + "</div>" +
+    '<div class="small" style="color:#5c7a6c">Code ' + esc(d.code || "") + "</div></div>";
+}
+function localVerify(code){
+  var hit = null;
+  Object.keys(db.done).forEach(function(uid){
+    if(db.done[uid] && db.done[uid].code === code) hit = uid;
+  });
+  if(!hit) return {valid:false, reason:"That code isn't in this device's records. Connect to the network and try again."};
+  var u = findUser(hit);
+  if(!u) return {valid:false, reason:"The intern for that code is no longer on file."};
+  return {
+    valid: true, code: code, name: u.name, company: certOrgText(u),
+    requiredHours: fmtNum(requiredMinutes(u) / 60),
+    renderedHours: fmtHrs(db.done[hit].minutes || totalMinutes(u)),
+    date: db.done[hit].date
+  };
+}
+function runVerify(raw){
+  var code = expandCode(raw);
+  var box = $("#vfResult");
+  $("#vfCode").value = code ? "SSS" + compactCode(code)
+    : String(raw || "").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 10);
+  if(!code || !codeWellFormed(code)){
+    box.innerHTML = verifyResultHtml({valid:false, reason:"Enter the 7 characters printed under the QR code, for example 7K2P94Q."});
+    return;
+  }
+  box.innerHTML = '<p class="muted small">Checking…</p>';
+  if(apiBase()){
+    fetch(apiBase() + "/verify?code=" + encodeURIComponent(code))
+      .then(function(r){ return r.json(); })
+      .then(function(d){ box.innerHTML = verifyResultHtml(d); })
+      .catch(function(){ box.innerHTML = verifyResultHtml(localVerify(code)); });
+  } else {
+    box.innerHTML = verifyResultHtml(localVerify(code));
+  }
+}
+function keepPrefix(el){
+  var body = el.value.toUpperCase().replace(/[^A-Z0-9]/g, "");
+  if(body.indexOf("SSS") === 0) body = body.slice(3);
+  body = body.slice(0, 7);
+  el.value = body ? "SSS" + body : "";
+  return body.length;
+}
+$("#vfCode").addEventListener("input", function(){
+  var n = keepPrefix(this);
+  try{ this.setSelectionRange(n + 3, n + 3); }catch(e){}
+});
+$("#vfCode").addEventListener("focus", function(){
+  if(!this.value) this.value = "SSS";
+  var el = this;
+  setTimeout(function(){ try{ el.setSelectionRange(el.value.length, el.value.length); }catch(e){} }, 0);
+});
+$("#vfCode").addEventListener("blur", function(){ if(this.value === "SSS") this.value = ""; });
+$("#vfCode").addEventListener("click", function(){
+  if(this.selectionStart < 3) try{ this.setSelectionRange(this.value.length, this.value.length); }catch(e){}
+});
+$("#btnVerify").addEventListener("click", function(){ runVerify($("#vfCode").value); });
+$("#vfCode").addEventListener("keydown", function(e){ if(e.key === "Enter") runVerify(this.value); });
+$("#btnGoVerify").addEventListener("click", function(){
+  $("#vfResult").innerHTML = ""; $("#vfCode").value = ""; show("verify");
+});
+$("#btnVerifyBack").addEventListener("click", function(){ route(); });
+
+$("#btnPngCert").addEventListener("click", function(){
+  var cv = $("#certCanvas"), name = (certFor ? certFor.name : "intern").replace(/[^a-z0-9]+/gi,"-").toLowerCase();
+  var code = certFor && db.done[certFor.id] && db.done[certFor.id].code ? "-" + db.done[certFor.id].code : "";
+  if(!certFor) name = "preview";
+  cv.toBlob(function(blob){
+    var url = URL.createObjectURL(blob), a = document.createElement("a");
+    a.href = url; a.download = "certificate-" + name + code + ".png";
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 4000);
+    toast("Certificate saved.");
+  }, "image/png");
+});
+$("#btnPrintCert").addEventListener("click", function(){ window.print(); });
+
+/* ============================================================
+   admin
+   ============================================================ */
+$$(".tabs button").forEach(function(b){
+  b.addEventListener("click", function(){
+    $$(".tabs button").forEach(function(x){ x.classList.remove("on"); });
+    b.classList.add("on");
+    ["interns","records","settings"].forEach(function(t){ $("#tab-"+t).classList.toggle("hide", t !== b.dataset.tab); });
+    if(b.dataset.tab === "records") renderRecords();
+    if(b.dataset.tab === "settings") fillSettings();
+  });
+});
+
+function interns(){ return db.users.filter(function(u){ return u.role === "intern"; }); }
+
+function renderAdmin(){
+  var q = $("#adSearch").value.trim().toLowerCase();
+  var list = interns().filter(function(u){
+    return !q || u.name.toLowerCase().indexOf(q) >= 0 || String(u.userid).toLowerCase().indexOf(q) >= 0;
+  });
+  if(!list.length){
+    $("#adList").innerHTML = '<div class="card pad center muted">No interns yet. Add one to start tracking hours.</div>';
+    return;
+  }
+  $("#adList").innerHTML = list.map(function(u){
+    var done = totalMinutes(u), req = requiredMinutes(u), pct = req ? Math.min(100, done/req*100) : 0;
+    var status = !u.active ? '<span class="tag off">Inactive</span>' :
+      (done >= req ? '<span class="tag ok">Completed</span>' : '<span class="tag go">' + pct.toFixed(0) + "%</span>");
+    return '<div class="card icard" data-id="' + u.id + '">' +
+      '<div class="hd"><div><div class="nm">' + esc(u.name) + "</div>" +
+      '<div class="small muted">' + esc(u.roleText || "Student Intern") + " · " + esc(u.userid) + "</div></div>" + status + "</div>" +
+      '<div class="bar' + (done>=req ? " done" : "") + '" style="margin-top:10px"><i style="width:' + pct + '%"></i></div>' +
+      '<div class="kv"><span>Rendered <b>' + fmtHrs(done) + '</b></span><span>Required <b>' + fmtNum(req/60) + '</b></span>' +
+      '<span>Remaining <b>' + fmtHrs(Math.max(0, req-done)) + '</b></span><span>Days <b>' + daysLogged(u) + "</b></span></div>" +
+      '<div class="small muted" style="margin-top:6px">' + lastLoginLine(u.id) + "</div>" +
+      '<div class="acts">' +
+        '<button class="btn sm sec" data-act="edit">Edit hours and details</button>' +
+        '<button class="btn sm sec" data-act="records">View record</button>' +
+        '<button class="btn sm sec" data-act="logins">Sign-ins</button>' +
+        (done >= req ? '<button class="btn sm" data-act="cert">Certificate</button>' : "") +
+      "</div></div>";
+  }).join("");
+}
+function lastLoginLine(id){
+  var e = lastLogin(id);
+  if(!e) return "No sign-in recorded yet";
+  return "Last sign-in " + esc(fmtDT(e.at)) + " · " + (e.lat !== undefined ? mapLink(e) + (e.acc ? " ±" + e.acc + " m" : "") : esc(e.err || "locating…"));
+}
+function esc(s){ return String(s).replace(/[&<>"]/g, function(c){ return ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"})[c]; }); }
+
+$("#adSearch").addEventListener("input", renderAdmin);
+$("#adList").addEventListener("click", function(e){
+  var btn = e.target.closest("button[data-act]"); if(!btn) return;
+  var id = e.target.closest(".icard").dataset.id, u = findUser(id);
+  if(btn.dataset.act === "edit") openIntern(u);
+  if(btn.dataset.act === "cert"){ checkDone(u, false); showCert(u); }
+  if(btn.dataset.act === "logins") showLogins(u);
+  if(btn.dataset.act === "records"){
+    $$(".tabs button").forEach(function(x){ x.classList.toggle("on", x.dataset.tab === "records"); });
+    ["interns","records","settings"].forEach(function(t){ $("#tab-"+t).classList.toggle("hide", t !== "records"); });
+    adWhoSel = id; renderRecords();
+  }
+});
+$("#btnAddIntern").addEventListener("click", function(){ openIntern(null); });
+$("#btnRefresh").addEventListener("click", function(){
+  if(SYNC.url){ syncNow(); toast("Refreshing from the server…"); } else { renderAdmin(); }
+});
+
+function showLogins(u){
+  var list = db.logins[u.id] || [];
+  $("#lgTitle").textContent = "Sign-ins · " + u.name;
+  if(!list.length){
+    $("#lgBody").innerHTML = '<p class="muted" style="margin:0">' + esc(u.name) + " hasn't signed in on this device yet.</p>";
+  } else {
+    $("#lgBody").innerHTML = '<div class="tablewrap"><table><thead><tr><th>When</th><th>Location</th><th>Accuracy</th><th>Device address</th></tr></thead><tbody>' +
+      list.map(function(e){
+        return "<tr><td class=\"d\">" + esc(fmtDT(e.at)) + "</td><td>" +
+          (e.lat !== undefined ? mapLink(e) : '<span class="muted">' + esc(e.err || "—") + "</span>") + "</td><td>" +
+          (e.acc ? "±" + e.acc + " m" : "-") + "</td><td>" + esc(e.ip || "-") + "</td></tr>";
+      }).join("") + "</tbody></table></div>";
+  }
+  openModal("#mLogins");
+}
+
+function openIntern(u){
+  editingIntern = u;
+  $("#miTitle").textContent = u ? "Edit intern" : "Add intern";
+  $("#miName").value = u ? u.name : "";
+  $("#miRole").value = u ? (u.roleText || "") : "";
+  $("#miUser").value = u ? u.userid : "";
+  $("#miPass").value = "";
+  $("#miPass").placeholder = u ? "Leave blank to keep" : "Set a password";
+  $("#miReq").value = u ? (u.requiredHours || db.settings.defaultRequired) : db.settings.defaultRequired;
+  $("#miAdj").value = u ? (u.adjustHours || 0) : 0;
+  $("#miCo").value = u ? (u.company || "") : certOrgText(null);
+  $("#miActive").value = u ? (u.active ? "1" : "0") : "1";
+  $("#miDelete").classList.toggle("hide", !u);
+  openModal("#mIntern");
+}
+$("#miSave").addEventListener("click", function(){
+  var name = $("#miName").value.trim(), userid = $("#miUser").value.trim();
+  if(!name || !userid){ toast("Name and user ID are required."); return; }
+  var clash = db.users.some(function(x){
+    return String(x.userid).toLowerCase() === userid.toLowerCase() && (!editingIntern || x.id !== editingIntern.id);
+  });
+  if(clash){ toast("That user ID is already taken."); return; }
+  var pass = $("#miPass").value;
+  if(!editingIntern && !pass){ toast("Set a password for the new intern."); return; }
+  var u = editingIntern || {id: uid(), role: "intern", pass: ""};
+  u.name = name; u.userid = userid;
+  u.roleText = $("#miRole").value.trim();
+  u.requiredHours = Math.max(1, +$("#miReq").value || db.settings.defaultRequired);
+  u.adjustHours = +$("#miAdj").value || 0;
+  u.company = $("#miCo").value.trim();
+  u.active = $("#miActive").value === "1" ? 1 : 0;
+  if(pass) u.pass = pass;
+  if(!editingIntern) db.users.push(u);
+  save(); closeModal("#mIntern"); renderAdmin();
+  checkDone(u, false);
+  toast("Saved " + u.name + ".");
+});
+$("#miDelete").addEventListener("click", function(){
+  var u = editingIntern; if(!u) return;
+  confirmAction("Remove intern", "This deletes " + u.name + " and every logged day for this account. Export a backup first if you need the record.", "Remove", function(){
+    db.users = db.users.filter(function(x){ return x.id !== u.id; });
+    delete db.logs[u.id]; delete db.done[u.id]; delete db.logins[u.id];
+    save(); closeModal("#mIntern"); renderAdmin(); toast("Intern removed.");
+  });
+});
+
+function renderRecords(){
+  var list = interns();
+  if(!list.length){ $("#adWho").innerHTML = ""; $("#adTable").innerHTML = ""; return; }
+  if(!adWhoSel || !findUser(adWhoSel)) adWhoSel = list[0].id;
+  $("#adWho").innerHTML = list.map(function(u){ return '<option value="' + u.id + '">' + esc(u.name) + "</option>"; }).join("");
+  $("#adWho").value = adWhoSel;
+  if(!adMonthSel) adMonthSel = todayKey().slice(0,7);
+  buildMonthSelect($("#adMonth"), adWhoSel, adMonthSel);
+  adMonthSel = $("#adMonth").value;
+  $("#adTable").innerHTML = monthRows(adWhoSel, adMonthSel, true).html;
+}
+$("#adWho").addEventListener("change", function(){ adWhoSel = this.value; renderRecords(); });
+$("#adMonth").addEventListener("change", function(){ adMonthSel = this.value; renderRecords(); });
+$("#adTable").addEventListener("click", function(e){
+  var tr = e.target.closest("tr[data-day]"); if(!tr) return;
+  openLog(adWhoSel, tr.dataset.day);
+});
+
+function openLog(userId, key){
+  editingLog = {userId: userId, key: key};
+  var l = userLogs(userId)[key] || {};
+  $("#mlTitle").textContent = longDate(key);
+  $("#mlIn").value = l.in || ""; $("#mlOut").value = l.out || "";
+  $("#mlBs").value = l.bs || ""; $("#mlBe").value = l.be || "";
+  $("#mlOtIn").value = l.otIn || ""; $("#mlOtOut").value = l.otOut || "";
+  var ips = l.ips || {}, names = {in:"Sign-in", bs:"Break start", be:"Break end", out:"Sign-out", otIn:"OT in", otOut:"OT out"};
+  var parts = Object.keys(names).filter(function(k){ return ips[k]; }).map(function(k){ return names[k] + " " + ips[k]; });
+  $("#mlIps").textContent = parts.length ? "Recorded from: " + parts.join(" · ") : "No device address recorded for this day.";
+  var locs = l.locs || {}, lp = Object.keys(names).filter(function(k){ return locs[k]; }).map(function(k){ return esc(names[k]) + " " + mapLink(locs[k]); });
+  if(lp.length) $("#mlIps").innerHTML += "<br>Locations: " + lp.join(" · ");
+  recalcLog();
+  openModal("#mLog");
+}
+function readLogForm(){
+  return {
+    in: $("#mlIn").value, out: $("#mlOut").value,
+    bs: $("#mlBs").value, be: $("#mlBe").value,
+    otIn: $("#mlOtIn").value, otOut: $("#mlOtOut").value
+  };
+}
+function recalcLog(){ $("#mlCalc").textContent = fmtHrs(dayMinutes(readLogForm())); }
+["#mlIn","#mlOut","#mlBs","#mlBe","#mlOtIn","#mlOtOut"].forEach(function(s){ $(s).addEventListener("change", recalcLog); });
+$("#mlSave").addEventListener("click", function(){
+  var v = readLogForm(), L = userLogs(editingLog.userId), clean = {}, prev = L[editingLog.key] || {};
+  for(var k in v) if(v[k]) clean[k] = v[k];
+  if(prev.ips && Object.keys(clean).length) clean.ips = prev.ips;
+  if(Object.keys(clean).length) L[editingLog.key] = clean; else delete L[editingLog.key];
+  save(); closeModal("#mLog"); renderRecords(); renderAdmin();
+  var u = findUser(editingLog.userId); checkDone(u, false);
+  toast("Entry updated.");
+});
+$("#mlClear").addEventListener("click", function(){
+  delete userLogs(editingLog.userId)[editingLog.key];
+  save(); closeModal("#mLog"); renderRecords(); renderAdmin(); toast("Day cleared.");
+});
+
+function fillSettings(){
+  paintSync();
+  var st = db.settings;
+  $("#stCo").value = st.company || "";
+  $("#stBranch").value = st.branch || "";
+  $("#stSig").value = st.signatory || "";
+  $("#stSigT").value = st.signatoryTitle || "";
+  $("#stReq").value = st.defaultRequired;
+}
+$("#btnCertPreview").addEventListener("click", function(){
+  var one = interns()[0];
+  showCert(one || {id:"preview", name:"Juan A. Dela Cruz"}, {
+    code: makeCertCode(),
+    date: todayKey(),
+    required: fmtNum(db.settings.defaultRequired),
+    rendered: fmtNum(db.settings.defaultRequired),
+    orgText: certOrgText(one),
+    name: one ? one.name : "Juan A. Dela Cruz"
+  });
+  toast("Preview only — this code is not registered.");
+});
+$("#btnSaveSettings").addEventListener("click", function(){
+  var st = db.settings;
+  st.company = $("#stCo").value.trim() || "Social Security System";
+  st.branch = $("#stBranch").value.trim();
+  st.signatory = $("#stSig").value.trim();
+  st.signatoryTitle = $("#stSigT").value.trim();
+  st.defaultRequired = Math.max(1, +$("#stReq").value || 300);
+  save(); renderAdmin(); toast("Settings saved.");
+});
+$("#btnSavePw").addEventListener("click", function(){
+  var p = $("#stPw").value;
+  if(!p){ toast("Type a new password first."); return; }
+  me.pass = p; save(); $("#stPw").value = ""; toast("Password changed.");
+});
+$("#btnExport").addEventListener("click", function(){
+  var blob = new Blob([JSON.stringify(db, null, 2)], {type:"application/json"});
+  var url = URL.createObjectURL(blob), a = document.createElement("a");
+  a.href = url; a.download = "intern-dta-backup-" + todayKey() + ".json";
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(function(){ URL.revokeObjectURL(url); }, 4000);
+});
+$("#btnImport").addEventListener("click", function(){ $("#fileImport").click(); });
+$("#fileImport").addEventListener("change", function(e){
+  var f = e.target.files[0]; if(!f) return;
+  var r = new FileReader();
+  r.onload = function(){
+    try{
+      var d = JSON.parse(r.result);
+      if(!d.users) throw new Error("bad");
+      delete d.syncSince;
+      confirmAction("Restore backup", "This replaces all interns and records currently in this browser.", "Restore", function(){
+        db = d; db.logs = db.logs || {}; db.done = db.done || {};
+        save(); renderAdmin(); fillSettings(); toast("Backup restored.");
+      });
+    }catch(err){ toast("That file isn't a valid backup."); }
+    e.target.value = "";
+  };
+  r.readAsText(f);
+});
+
+/* ============================================================
+   cloud sync — Azure SQL through /api/sync
+   The setup script prints the exact line to paste here.
+   Leave url empty to keep everything on this device only.
+   Syncing happens when the app opens, a second after any change,
+   when the app is brought back to the foreground (at most once
+   every two minutes) and from the Sync now button. There is no
+   background polling on purpose: every call wakes the serverless
+   database and spends free compute seconds.
+   ============================================================ */
+var SYNC = { url: "/api/sync", key: "ROBQWnLhgcC2icShvOJkBqFWrxuTQ3IbeO6ISHLC" };
+var SYNCST = { ok:false, busy:false, last:0, err:"" };
+var snap = null, syncTimer = null, applying = false;
+
+function serializeAll(){
+  var m = {};
+  m["settings"] = db.settings;
+  db.users.forEach(function(u){ m["user|" + u.id] = u; });
+  Object.keys(db.logs).forEach(function(uid){
+    Object.keys(db.logs[uid] || {}).forEach(function(d){ m["log|" + uid + "|" + d] = db.logs[uid][d]; });
+  });
+  Object.keys(db.done).forEach(function(uid){ m["done|" + uid] = db.done[uid]; });
+  Object.keys(db.logins).forEach(function(uid){
+    (db.logins[uid] || []).forEach(function(e){ if(e && e.at) m["login|" + uid + "|" + e.at] = e; });
+  });
+  return JSON.parse(JSON.stringify(m));
+}
+function diffAgainstSnap(cur){
+  var out = [], k;
+  for(k in cur){ if(!snap || !snap[k] || JSON.stringify(snap[k]) !== JSON.stringify(cur[k])) out.push({key:k, doc:cur[k]}); }
+  if(snap) for(k in snap){ if(!(k in cur)) out.push({key:k, deleted:true}); }
+  return out;
+}
+function mapFromItems(items){
+  var m = {};
+  (items || []).forEach(function(it){ if(!it.deleted) m[it.key] = it.doc; });
+  return m;
+}
+function applyItem(it){
+  var p = String(it.key).split("|"), i, idx = -1;
+  if(it.key === "settings"){ if(!it.deleted && it.doc) db.settings = it.doc; return; }
+  if(p[0] === "user"){
+    for(i = 0; i < db.users.length; i++) if(db.users[i].id === p[1]) idx = i;
+    if(it.deleted){
+      if(idx >= 0) db.users.splice(idx, 1);
+      delete db.logs[p[1]]; delete db.done[p[1]]; delete db.logins[p[1]];
+    } else if(it.doc){
+      if(idx >= 0) db.users[idx] = it.doc; else db.users.push(it.doc);
+    }
+    return;
+  }
+  if(p[0] === "log"){ var L = userLogs(p[1]); if(it.deleted) delete L[p[2]]; else if(it.doc) L[p[2]] = it.doc; return; }
+  if(p[0] === "done"){ if(it.deleted) delete db.done[p[1]]; else if(it.doc) db.done[p[1]] = it.doc; return; }
+  if(p[0] === "login"){
+    var a = db.logins[p[1]] = db.logins[p[1]] || [], at = p.slice(2).join("|"), f = -1;
+    for(i = 0; i < a.length; i++) if(a[i].at === at) f = i;
+    if(it.deleted){ if(f >= 0) a.splice(f, 1); }
+    else if(it.doc){ if(f >= 0) a[f] = it.doc; else a.push(it.doc); }
+    a.sort(function(x, y){ return x.at < y.at ? 1 : -1; });
+    if(a.length > 30) a.length = 30;
+  }
+}
+function syncText(){
+  if(!SYNC.url) return "Cloud sync is off — records stay on this device.";
+  if(navigator.onLine === false) return "No connection — saved here and sent automatically when the network returns.";
+  if(SYNCST.busy) return "Syncing…";
+  if(SYNCST.ok){
+    var mins = Math.round((Date.now() - SYNCST.last) / 60000);
+    return "Synced " + (mins < 1 ? "just now" : mins + " min ago") + " · shared with every device.";
+  }
+  return "Offline — saved on this device and will sync when the connection returns." + (SYNCST.err ? " (" + SYNCST.err + ")" : "");
+}
+function paintSync(){
+  var a = $("#pgSync"), b = $("#stSync");
+  if(a) a.textContent = syncText();
+  if(b) b.textContent = syncText();
+}
+function refreshView(){
+  if(me){ me = findUser(me.id) || me; }
+  if($("#view-intern").classList.contains("on")) renderIntern();
+  if($("#view-logs").classList.contains("on")) renderLogTable();
+  if($("#view-admin").classList.contains("on")){
+    renderAdmin();
+    if(!$("#tab-records").classList.contains("hide")) renderRecords();
+  }
+  paintLocation(); paintSync();
+}
+function queueSync(){
+  if(!SYNC.url || applying || !me) return;
+  clearTimeout(syncTimer);
+  syncTimer = setTimeout(syncNow, 1200);
+}
+function hasPending(){
+  if(!SYNC.url || !me) return false;
+  if(!snap) return true;
+  return diffAgainstSnap(serializeAll()).length > 0;
+}
+function syncNow(opts){
+  opts = opts || {};
+  function done(){ if(opts.cb) opts.cb(); }
+  // signed out means no database traffic at all, so a serverless database can idle
+  if(!SYNC.url || SYNCST.busy || (!me && !opts.force)){ done(); return; }
+  var first = (db.syncSince === undefined || db.syncSince === null);
+  var cur = serializeAll(), changes = first ? [] : diffAgainstSnap(cur), pushed = {};
+  changes.forEach(function(c){ pushed[c.key] = 1; });
+  SYNCST.busy = true; paintSync();
+  fetch(SYNC.url, {
+    method: "POST",
+    headers: {"Content-Type":"application/json", "x-app-key": SYNC.key},
+    body: JSON.stringify({since: first ? 0 : (db.syncSince || 0), items: changes})
+  }).then(function(r){
+    if(!r.ok) throw new Error("HTTP " + r.status);
+    return r.json();
+  }).then(function(out){
+    applying = true;
+    (out.items || []).forEach(function(it){ if(!pushed[it.key]) applyItem(it); });
+    db.syncSince = out.now || db.syncSince || Date.now();
+    save();
+    applying = false;
+    snap = first ? mapFromItems(out.items) : serializeAll();
+    SYNCST.ok = true; SYNCST.err = ""; SYNCST.last = Date.now(); SYNCST.busy = false;
+    refreshView();
+    if(first) setTimeout(function(){ syncNow(opts); }, 400);
+    else done();
+  }).catch(function(e){
+    SYNCST.ok = false; SYNCST.busy = false;
+    SYNCST.err = String((e && e.message) || e);
+    paintSync();
+    done();
+  });
+}
+$("#btnSyncNow").addEventListener("click", function(){
+  if(!SYNC.url){ toast("No sync endpoint is set in this build."); return; }
+  syncNow(); toast("Syncing…");
+});
+document.addEventListener("visibilitychange", function(){
+  if(!document.hidden && Date.now() - SYNCST.last > 120000) syncNow();
+});
+window.addEventListener("online", function(){ paintSync(); syncNow(); });
+window.addEventListener("offline", paintSync);
+// while signed in, keep trying until anything unsent gets through
+setInterval(function(){
+  if(!me || document.hidden) return;
+  if(navigator.onLine === false) return;
+  if(!SYNCST.ok || hasPending()) syncNow();
+}, 60000);
+
+/* ============================================================
+   boot
+   ============================================================ */
+function scannedCode(){
+  var m = /[?&]v=([^&]+)/.exec(location.search || "");
+  if(m) return expandCode(decodeURIComponent(m[1]));
+  m = /\/v\/([A-Za-z0-9-]+)\/?$/i.exec(location.pathname || "");
+  return m ? expandCode(m[1]) : "";
+}
+db = load();
+try{ if(!localStorage.getItem(KEY)) save(); }catch(e){}
+initTheme();
+var incoming = scannedCode();
+if(incoming){
+  show("verify");
+  $("#btnSignOut").classList.add("hide");
+  runVerify(incoming);
+} else {
+  route();
+  if(me){ armIdle(); syncNow(); }
+}
+setInterval(function(){
+  if(me && me.role === "intern" && $("#view-intern").classList.contains("on") && $("#inDate").textContent !== longDate(todayKey())) renderIntern();
+}, 30000);
+
+})();
+</script>
+</body>
+</html>

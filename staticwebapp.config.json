@@ -1,0 +1,9 @@
+{
+  "platform": { "apiRuntime": "node:20" },
+  "navigationFallback": {
+    "rewrite": "/index.html",
+    "exclude": ["/api/*"]
+  },
+  "globalHeaders": { "cache-control": "no-store" },
+  "responseOverrides": { "404": { "rewrite": "/index.html" } }
+}
